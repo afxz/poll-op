@@ -11,13 +11,12 @@ def main():
     if not TELEGRAM_TOKEN:
         logger.error("TELEGRAM_TOKEN is not set in .env!")
         return
-    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).post_init(lambda app: schedule_jobs(app)).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("poll", poll_command))
     app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(CommandHandler("testpoll", testpoll_command))
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))
-    schedule_jobs(app)
     logger.warning("LMS Bot started.")
     app.run_polling()
 

@@ -6,7 +6,7 @@ import random
 
 IST = pytz.timezone('Asia/Kolkata')
 
-def schedule_jobs(app):
+async def schedule_jobs(app):
     # Schedule daily poll at a random time between 8:00 PM and 9:00 PM IST
     now = datetime.now(IST)
     random_minute = random.randint(0, 59)
