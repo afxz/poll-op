@@ -30,4 +30,4 @@ This project is a Python Telegram bot to automate a Last Man Standing (LMS) chal
 
 ---
 
-For more details, see the code and comments in `lms_bot.py`.
+For more details, see the code and comments in `bot.py`.
