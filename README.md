@@ -25,7 +25,7 @@ This project is a Python Telegram bot to automate a Last Man Standing (LMS) chal
    ```
 3. Run the bot:
    ```bash
-   python lms_bot.py
+   python bot.py
    ```
 
 ---
