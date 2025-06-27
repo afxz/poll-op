@@ -4,7 +4,7 @@ from config import TELEGRAM_TOKEN
 from handlers import start, poll_command, stats_command, testpoll_command, ignore_nonadmin
 from jobs import schedule_jobs
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(message)s')
 logger = logging.getLogger(__name__)
 
 def main():
@@ -18,7 +18,7 @@ def main():
     app.add_handler(CommandHandler("testpoll", testpoll_command))
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))
     schedule_jobs(app)
-    logger.info("LMS Bot started.")
+    logger.warning("LMS Bot started.")
     app.run_polling()
 
 if __name__ == "__main__":
