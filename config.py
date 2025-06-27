@@ -20,6 +20,7 @@ POLL_OPTIONS = [
     "❌ Relapsed today"
 ]
 MOTIVATION_TIMES = [
-    time(int(t.split(':')[0]), int(t.split(':')[1]))
-    for t in os.getenv('MOTIVATION_TIMES', '08:00,20:00').split(',')
+    time(5, 0),
+    time(12, 0),
+    time(20, 0)
 ]

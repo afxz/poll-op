@@ -44,7 +44,7 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Attempting to send poll: day_num={day_num}, group_id={GROUP_CHAT_ID}")
     if 1 <= day_num <= CHALLENGE_DAYS and GROUP_CHAT_ID:
         date_str = today.strftime('%d/%m/%Y')
-        question = f"[ Poll : How was your day? {date_str} 🌌 ]"
+        question = f"[ Poll : How was your day? {date_str} 🌌 ]\nKeep pushing forward, every day is a win!"
         try:
             poll_msg = await context.bot.send_poll(
                 chat_id=GROUP_CHAT_ID,
@@ -78,7 +78,7 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
 async def poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now(IST).date()
     date_str = today.strftime('%d/%m/%Y')
-    question = f"[ Test Poll : How was your day? {date_str} 🌌 ]\n(This is a test poll for the group)"
+    question = f"[ Test Poll : How was your day? {date_str} 🌌 ]\nKeep pushing forward, every day is a win!\n(This is a test poll for the group)"
     try:
         poll_msg = await context.bot.send_poll(
             chat_id=GROUP_CHAT_ID,
@@ -146,3 +146,8 @@ async def ignore_nonadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id if update.effective_user else None
     if user_id != ADMIN_ID:
         return
+
+async def send_motivation(context: ContextTypes.DEFAULT_TYPE):
+    msg = get_motivation()
+    if GROUP_CHAT_ID:
+        await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg)
