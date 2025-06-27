@@ -11,7 +11,8 @@ def main():
     if not TELEGRAM_TOKEN:
         logger.error("TELEGRAM_TOKEN is not set in .env!")
         return
-    app = ApplicationBuilder().token(TELEGRAM_TOKEN).post_init(lambda app: schedule_jobs(app)).build()
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).job_queue(True).build()
+    app.post_init = lambda app: schedule_jobs(app)
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("poll", poll_command))
     app.add_handler(CommandHandler("stats", stats_command))
