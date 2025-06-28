@@ -95,12 +95,14 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "All ban and relapse-related messages are <b>auto-deleted</b> after 55–77 seconds for privacy and to reduce spam.\n\n"
             "<i>Use this feature responsibly. Only use /relapse if you have truly lost the challenge.</i>"
         )
-        # Add Go Back button
         keyboard = [
             [InlineKeyboardButton("🔙 Go Back", callback_data="nav_home")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+        current_msg = getattr(query.message, 'text', None)
+        current_markup = getattr(query.message, 'reply_markup', None)
+        if current_msg != msg or current_markup != reply_markup:
+            await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
         await query.answer()
     else:
         # Go Back or unknown: show full start message with navigation buttons (concise, in sync)
@@ -116,7 +118,10 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+        current_msg = getattr(query.message, 'text', None)
+        current_markup = getattr(query.message, 'reply_markup', None)
+        if current_msg != msg or current_markup != reply_markup:
+            await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
         await query.answer()
         return
     # Add Go Back button
@@ -333,14 +338,18 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     msg_obj = update.message
+    sent_msg = None
     if msg_obj is not None:
         sent_msg = await msg_obj.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
-        # Schedule auto-delete for both the confirmation and the original /relapse command
-        await asyncio.sleep(delete_seconds)
+    # Schedule auto-delete for both the confirmation and the original /relapse command
+    await asyncio.sleep(delete_seconds)
+    if sent_msg is not None:
         try:
             await sent_msg.delete()
         except Exception:
             pass
+    # Always try to delete the original /relapse command message
+    if msg_obj is not None:
         try:
             await msg_obj.delete()
         except Exception:
