@@ -22,20 +22,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
     msg = (
         "<b>👋 Welcome to LMS 6.0!</b>\n\n"
-        "<b>Navigation & Commands:</b>\n"
-        "Use the buttons below to navigate.\n\n"
-        f"<b>Challenge Info:</b>\n"
+        "<b>Challenge Info:</b>\n"
         f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
         f"• <b>End Date:</b> {challenge_end}\n"
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
         f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
         f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 20:00-21:00\n• Motivation: {motivation_times}\n\n"
-        "<b>Poll Options:</b>\n"
-        + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-        "\n\n<b>Tip:</b> Use the navigation buttons below!\n"
-        "<i>All commands are admin-only.</i>\n\n"
-        "<b>Relapse Ban Info:</b>\nIf you use /relapse and confirm, you will be permanently banned from the group. "
-        "Ban messages will be auto-deleted after 3-5 minutes to reduce spam."
+        "<b>Use the navigation buttons below to explore all features and commands.</b>\n"
+        "<i>All commands are admin-only.</i>"
     )
     keyboard = [
         [
