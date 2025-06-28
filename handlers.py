@@ -301,7 +301,7 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
             f"• <b>End Date:</b> {challenge_end}\n"
             f"• <b>Day:</b> 0 / {CHALLENGE_DAYS}\n\n"
-            "You can't use /relapse before the challenge begins.\n\n"
+            "You can't use <code>/relapse</code> before the challenge begins.\n\n"
             f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
         )
         msg_obj = update.message
