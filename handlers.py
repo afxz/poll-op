@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
+from telegram.ext import ContextTypes, CallbackQueryHandler
 from config import POLL_OPTIONS, ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES
 from motivation import get_motivation
 from utils import admin_only
@@ -21,11 +21,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
         "<b>👋 Welcome to LMS 6.0!</b>\n\n"
         "<b>Navigation & Commands:</b>\n"
-        "• <b>/poll</b> — Send a test poll to the group.\n"
-        "• <b>/testpoll</b> — Test poll in your DM.\n"
-        "• <b>/testmotivation</b> — Send a test motivational message in the group.\n"
-        "• <b>/stats</b> — View LMS stats.\n"
-        "• <b>/start</b> — Show this menu.\n\n"
+        "Use the buttons below to navigate.\n\n"
         f"<b>Challenge Info:</b>\n"
         f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
         f"• <b>End Date:</b> {challenge_end}\n"
@@ -34,11 +30,77 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 20:00-21:00\n• Motivation: {motivation_times}\n\n"
         "<b>Poll Options:</b>\n"
         + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-        "\n\n<b>Tip:</b> Use /poll or /testmotivation any time to test in the group!\n"
+        "\n\n<b>Tip:</b> Use the navigation buttons below!\n"
         "<i>All commands are admin-only.</i>"
     )
-    if update.message:
-        await update.message.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)
+    keyboard = [
+        [
+            InlineKeyboardButton("📊 Polls", callback_data="nav_polls"),
+            InlineKeyboardButton("💡 Motivation", callback_data="nav_motivation")
+        ],
+        [
+            InlineKeyboardButton("📈 Stats", callback_data="nav_stats"),
+            InlineKeyboardButton("🚨 Relapse", callback_data="nav_relapse")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    msg_obj = update.message
+    if msg_obj is not None:
+        await msg_obj.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+
+# Navigation callback handler
+async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    if not query:
+        return
+    data = getattr(query, 'data', None)
+    if not data:
+        return
+    today = datetime.now(IST).date()
+    day_num = (today - CHALLENGE_START_DATE.date()).days + 1
+    days_left = CHALLENGE_DAYS - day_num + 1
+    challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
+    motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
+    if data == "nav_polls":
+        msg = (
+            "<b>📊 Polls</b>\n\n"
+            "• <b>/poll</b> — Send a test poll to the group.\n"
+            "• <b>/testpoll</b> — Test poll in your DM.\n\n"
+            "<b>Poll Options:</b>\n"
+            + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)])
+        )
+    elif data == "nav_motivation":
+        msg = (
+            "<b>💡 Motivation</b>\n\n"
+            "• <b>/testmotivation</b> — Send a test motivational message in the group.\n\n"
+            f"<b>Motivation Times (IST):</b> {motivation_times}"
+        )
+    elif data == "nav_stats":
+        msg = (
+            f"<b>📈 LMS Stats</b>\n\n"
+            f"<b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
+            f"<b>End Date:</b> {challenge_end}\n"
+            f"<b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
+            f"<b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
+            f"<b>Group ID:</b> <code>{GROUP_CHAT_ID}</code>\n"
+            f"<b>Admin ID:</b> <code>{ADMIN_ID}</code>\n"
+            "<i>All times are in Indian Standard Time (IST).</i>"
+        )
+    elif data == "nav_relapse":
+        msg = (
+            "<b>🚨 Relapse Command</b>\n\n"
+            "• <b>/relapse</b> — Register a relapse (non-admins only).\n\n"
+            "If you relapse, you will be permanently banned from the group. Use responsibly!"
+        )
+    else:
+        msg = "<b>👋 Welcome to LMS 6.0!</b>\n\nUse the navigation buttons below."
+    # Add Go Back button
+    keyboard = [
+        [InlineKeyboardButton("🔙 Go Back", callback_data="nav_home")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+    await query.answer()
 
 async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now(IST).date()
@@ -106,8 +168,9 @@ async def poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.warning(f"Failed to reply to poll: {e}")
     except Exception as e:
         logger.error(f"Failed to send test poll: {e}")
-    if update.message:
-        await update.message.reply_text("Test poll sent to the group!")
+    msg_obj = update.message
+    if msg_obj is not None:
+        await msg_obj.reply_text("Test poll sent to the group!")
 
 @admin_only
 async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -127,8 +190,9 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>Admin ID:</b> <code>{ADMIN_ID}</code>\n"
         "<i>All times are in Indian Standard Time (IST).</i>"
     )
-    if update.message:
-        await update.message.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)
+    msg_obj = update.message
+    if msg_obj is not None:
+        await msg_obj.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)
 
 @admin_only
 async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -160,8 +224,9 @@ async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.warning(f"Failed to reply to poll: {e}")
     except Exception as e:
         logger.error(f"Failed to send test poll: {e}")
-    if update.message:
-        await update.message.reply_text("Test poll sent to the group!")
+    msg_obj = update.message
+    if msg_obj is not None:
+        await msg_obj.reply_text("Test poll sent to the group!")
 
 @admin_only
 async def testmotivation_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -172,8 +237,9 @@ async def testmotivation_command(update: Update, context: ContextTypes.DEFAULT_T
     msg = re.sub(r'`([^`]+)`', r'<code>\1</code>', msg)
     if GROUP_CHAT_ID:
         await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg, parse_mode="HTML")
-    if update.message:
-        await update.message.reply_text("Test motivational message sent to the group!", parse_mode="HTML")
+    msg_obj = update.message
+    if msg_obj is not None:
+        await msg_obj.reply_text("Test motivational message sent to the group!", parse_mode="HTML")
 
 async def ignore_nonadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id if update.effective_user else None
@@ -230,14 +296,19 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
+    msg_obj = update.message
+    if msg_obj is not None:
+        await msg_obj.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
 
 async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    user = query.from_user
-    data = query.data
-    if not user or user.id == ADMIN_ID:
-        await query.answer()
+    if not query:
+        return
+    user = getattr(query, 'from_user', None)
+    data = getattr(query, 'data', None)
+    if not user or user.id == ADMIN_ID or not data:
+        if query:
+            await query.answer()
         return
     if data.startswith("relapse_yes_"):
         # Ban and kick user
@@ -261,3 +332,6 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="⚠️ Please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences."
         )
     await query.answer()
+
+# Register navigation callback handler at the end of the file
+# (Make sure to add this handler in bot.py as well)
