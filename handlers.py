@@ -308,6 +308,8 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     challenge_started = is_challenge_started()
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
+    import random
+    delete_seconds = random.randint(120, 180)
     if not challenge_started:
         msg = (
             f"🚫 The LMS challenge hasn't started yet!\n\n"
@@ -315,11 +317,17 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
             f"• <b>End Date:</b> {challenge_end}\n"
             f"• <b>Day:</b> 0 / {CHALLENGE_DAYS}\n\n"
-            "You can't use /relapse before the challenge begins."
+            "You can't use /relapse before the challenge begins.\n\n"
+            f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
         )
         msg_obj = update.message
         if msg_obj is not None:
-            await msg_obj.reply_text(msg, parse_mode="HTML")
+            sent_msg = await msg_obj.reply_text(msg, parse_mode="HTML")
+            await asyncio.sleep(delete_seconds)
+            try:
+                await sent_msg.delete()
+            except Exception:
+                pass
         return
     # Show confirmation with inline buttons
     msg = (
@@ -330,7 +338,8 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• <b>End Date:</b> {challenge_end}\n"
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n\n"
         f"You have lasted <b>{day_num if day_num > 0 else 0}</b> days in LMS.\n\n"
-        "Are you sure you want to proceed?"
+        f"Are you sure you want to proceed?\n\n"
+        f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
     )
     keyboard = [
         [
@@ -341,7 +350,13 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
     msg_obj = update.message
     if msg_obj is not None:
-        await msg_obj.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
+        sent_msg = await msg_obj.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
+        # Schedule auto-delete
+        await asyncio.sleep(delete_seconds)
+        try:
+            await sent_msg.delete()
+        except Exception:
+            pass
 
 async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     import random
@@ -354,6 +369,7 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query:
             await query.answer()
         return
+    delete_seconds = random.randint(120, 180)
     if data.startswith("relapse_yes_"):
         # Ban and kick user
         group_id = GROUP_CHAT_ID
@@ -366,11 +382,9 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.delete_message(chat_id=group_id, message_id=msg_obj.message_id)
             except Exception:
                 pass
-            # Random auto-delete time between 3 and 5 minutes
-            delete_minutes = random.randint(3, 5)
             ban_msg = await context.bot.send_message(
                 chat_id=group_id,
-                text=f"🚫 User <code>{user.id}</code> has been <b>banned</b> from the group for relapsing and losing the LMS challenge.\n\n<code>This message will be auto-deleted in {delete_minutes} minutes.</code>",
+                text=f"🚫 User <code>{user.id}</code> has been <b>banned</b> from the group for relapsing and losing the LMS challenge.\n\n<code>This message will be auto-deleted in {delete_seconds} seconds.</code>",
                 parse_mode="HTML"
             )
             await query.edit_message_text(
@@ -379,13 +393,13 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"User ID: <code>{user.id}</code> has been <b>permanently banned</b> from the group for relapsing and losing the LMS challenge.\n\n"
                     f"<b>User ID:</b> <code>{user.id}</code>\n"
                     f"<b>Reason:</b> Relapse registered during LMS challenge.\n\n"
-                    f"<i>This message will be auto-deleted in {delete_minutes} minutes.</i>\n"
+                    f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>\n"
                     f"Stay strong and try again next time!"
                 ),
                 parse_mode="HTML"
             )
             # Schedule auto-delete for both messages
-            await asyncio.sleep(delete_minutes * 60)
+            await asyncio.sleep(delete_seconds)
             try:
                 await context.bot.delete_message(chat_id=group_id, message_id=ban_msg.message_id)
             except Exception:
@@ -399,9 +413,16 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=f"❌ Failed to ban user: {e}"
             )
     elif data.startswith("relapse_no_"):
-        await query.edit_message_text(
-            text="⚠️ Please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences."
+        warn_msg = (
+            f"⚠️ Please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences.\n\n"
+            f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
         )
+        await query.edit_message_text(text=warn_msg)
+        await asyncio.sleep(delete_seconds)
+        try:
+            await query.delete_message()
+        except Exception:
+            pass
     await query.answer()
 
 # Register navigation callback handler at the end of the file
