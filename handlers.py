@@ -92,7 +92,7 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<b>🚨 Relapse Command</b>\n\n"
             "• <b>/relapse</b> — Register a relapse (non-admins only).\n\n"
             "If you relapse, you will be <b>permanently banned</b> from the group. "
-            "All ban and relapse-related messages are <b>auto-deleted</b> after 15–24 seconds for privacy and to reduce spam.\n\n"
+            "All ban and relapse-related messages are <b>auto-deleted</b> after 55–77 seconds for privacy and to reduce spam.\n\n"
             "<i>Use this feature responsibly. Only use /relapse if you have truly lost the challenge.</i>"
         )
         # Add Go Back button
@@ -293,7 +293,7 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     import random
-    delete_seconds = random.randint(15, 24)
+    delete_seconds = random.randint(55, 77)
     if not challenge_started:
         msg = (
             f"🚫 The LMS challenge hasn't started yet!\n\n"
@@ -357,7 +357,7 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query:
             await query.answer()
         return
-    delete_seconds = random.randint(15, 24)
+    delete_seconds = random.randint(55, 77)
     if data.startswith("relapse_yes_"):
         # Ban and kick user
         group_id = GROUP_CHAT_ID
