@@ -92,7 +92,7 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<b>🚨 Relapse Command</b>\n\n"
             "• <b>/relapse</b> — Register a relapse (non-admins only).\n\n"
             "If you relapse, you will be <b>permanently banned</b> from the group. "
-            "All ban and relapse-related messages are <b>auto-deleted</b> after 30–70 seconds for privacy and to reduce spam.\n\n"
+            "All ban and relapse-related messages are <b>auto-deleted</b> after 15–24 seconds for privacy and to reduce spam.\n\n"
             "<i>Use this feature responsibly. Only use /relapse if you have truly lost the challenge.</i>"
         )
         # Add Go Back button
@@ -293,7 +293,7 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     import random
-    delete_seconds = random.randint(30, 70)
+    delete_seconds = random.randint(15, 24)
     if not challenge_started:
         msg = (
             f"🚫 The LMS challenge hasn't started yet!\n\n"
@@ -335,10 +335,14 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_obj = update.message
     if msg_obj is not None:
         sent_msg = await msg_obj.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
-        # Schedule auto-delete
+        # Schedule auto-delete for both the confirmation and the original /relapse command
         await asyncio.sleep(delete_seconds)
         try:
             await sent_msg.delete()
+        except Exception:
+            pass
+        try:
+            await msg_obj.delete()
         except Exception:
             pass
 
@@ -353,7 +357,7 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query:
             await query.answer()
         return
-    delete_seconds = random.randint(30, 70)
+    delete_seconds = random.randint(15, 24)
     if data.startswith("relapse_yes_"):
         # Ban and kick user
         group_id = GROUP_CHAT_ID
