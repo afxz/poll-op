@@ -1,7 +1,7 @@
 import logging
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from config import TELEGRAM_TOKEN
-from handlers import start, poll_command, stats_command, testpoll_command, testmotivation_command, ignore_nonadmin
+from handlers import start, poll_command, stats_command, testpoll_command, testmotivation_command, ignore_nonadmin, relapse_command, relapse_callback
 from jobs import schedule_jobs
 
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(message)s')
@@ -18,6 +18,8 @@ def main():
     app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(CommandHandler("testpoll", testpoll_command))
     app.add_handler(CommandHandler("testmotivation", testmotivation_command))
+    app.add_handler(CommandHandler("relapse", relapse_command))
+    app.add_handler(CallbackQueryHandler(relapse_callback, pattern="^relapse_"))
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))
     logger.warning("LMS Bot started.")
     app.run_polling()

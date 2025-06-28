@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from config import POLL_OPTIONS, ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES
 from motivation import get_motivation
@@ -166,8 +166,10 @@ async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @admin_only
 async def testmotivation_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = get_motivation()
-    # Replace markdown bold **text** with Telegram HTML <b>text</b>
+    # Format: bold (**text**), italic (*text*), code (`text`)
     msg = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', msg)
+    msg = re.sub(r'\*(.*?)\*', r'<i>\1</i>', msg)
+    msg = re.sub(r'`([^`]+)`', r'<code>\1</code>', msg)
     if GROUP_CHAT_ID:
         await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg, parse_mode="HTML")
     if update.message:
@@ -180,7 +182,82 @@ async def ignore_nonadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def send_motivation(context: ContextTypes.DEFAULT_TYPE):
     msg = get_motivation()
-    # Replace markdown bold **text** with Telegram HTML <b>text</b>
+    # Format: bold (**text**), italic (*text*), code (`text`)
     msg = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', msg)
+    msg = re.sub(r'\*(.*?)\*', r'<i>\1</i>', msg)
+    msg = re.sub(r'`([^`]+)`', r'<code>\1</code>', msg)
     if GROUP_CHAT_ID:
         await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg, parse_mode="HTML")
+
+def is_challenge_started():
+    today = datetime.now(IST).date()
+    return today >= CHALLENGE_START_DATE.date()
+
+async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    if not user or user.id == ADMIN_ID:
+        return  # Ignore admin
+    today = datetime.now(IST).date()
+    challenge_started = is_challenge_started()
+    challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
+    day_num = (today - CHALLENGE_START_DATE.date()).days + 1
+    if not challenge_started:
+        msg = (
+            f"🚫 The LMS challenge hasn't started yet!\n\n"
+            f"<b>Challenge Info:</b>\n"
+            f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
+            f"• <b>End Date:</b> {challenge_end}\n"
+            f"• <b>Day:</b> 0 / {CHALLENGE_DAYS}\n\n"
+            "You can't use /relapse before the challenge begins."
+        )
+        await update.message.reply_text(msg, parse_mode="HTML")
+        return
+    # Show confirmation with inline buttons
+    msg = (
+        f"⚠️ <b>Are you sure you want to register a relapse?</b>\n\n"
+        f"If you click <b>YES</b>, you are officially admitting that you have lost the challenge and will be <b>permanently banned</b> from the group.\n\n"
+        f"<b>Challenge Info:</b>\n"
+        f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
+        f"• <b>End Date:</b> {challenge_end}\n"
+        f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n\n"
+        f"You have lasted <b>{day_num if day_num > 0 else 0}</b> days in LMS.\n\n"
+        "Are you sure you want to proceed?"
+    )
+    keyboard = [
+        [
+            InlineKeyboardButton("✅ YES", callback_data=f"relapse_yes_{user.id}"),
+            InlineKeyboardButton("❌ NO", callback_data=f"relapse_no_{user.id}")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
+
+async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user = query.from_user
+    data = query.data
+    if not user or user.id == ADMIN_ID:
+        await query.answer()
+        return
+    if data.startswith("relapse_yes_"):
+        # Ban and kick user
+        group_id = GROUP_CHAT_ID
+        try:
+            await context.bot.ban_chat_member(chat_id=group_id, user_id=user.id)
+            await context.bot.send_message(
+                chat_id=group_id,
+                text=f"🚫 User <b>{user.full_name}</b> (<code>{user.id}</code>) has been <b>banned</b> from the group for relapsing and losing the LMS challenge.",
+                parse_mode="HTML"
+            )
+            await query.edit_message_text(
+                text=f"🚫 You have been banned from the group for relapsing and losing the LMS challenge."
+            )
+        except Exception as e:
+            await query.edit_message_text(
+                text=f"❌ Failed to ban user: {e}"
+            )
+    elif data.startswith("relapse_no_"):
+        await query.edit_message_text(
+            text="⚠️ Please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences."
+        )
+    await query.answer()
