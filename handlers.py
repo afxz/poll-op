@@ -13,14 +13,13 @@ import random
 logger = logging.getLogger(__name__)
 IST = pytz.timezone('Asia/Kolkata')
 
-@admin_only
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def get_start_message():
     today = datetime.now(IST).date()
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     days_left = CHALLENGE_DAYS - day_num + 1
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
-    msg = (
+    return (
         "<b>👋 Welcome to LMS 6.0!</b>\n\n"
         "<b>Challenge Info:</b>\n"
         f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
@@ -31,6 +30,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>Use the navigation buttons below to explore all features and commands.</b>\n"
         "<i>All commands are admin-only.</i>"
     )
+
+@admin_only
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = get_start_message()
     keyboard = [
         [
             InlineKeyboardButton("📊 Polls", callback_data="nav_polls"),
@@ -88,33 +91,20 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg = (
             "<b>🚨 Relapse Command</b>\n\n"
             "• <b>/relapse</b> — Register a relapse (non-admins only).\n\n"
-            "If you relapse, you will be permanently banned from the group. "
-            "Ban messages will be auto-deleted after 3-5 minutes to reduce spam. Use responsibly!"
+            "If you relapse, you will be <b>permanently banned</b> from the group. "
+            "All ban and relapse-related messages are <b>auto-deleted</b> after 30–70 seconds for privacy and to reduce spam.\n\n"
+            "<i>Use this feature responsibly. Only use /relapse if you have truly lost the challenge.</i>"
         )
+        # Add Go Back button
+        keyboard = [
+            [InlineKeyboardButton("🔙 Go Back", callback_data="nav_home")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+        await query.answer()
     else:
-        # Go Back or unknown: show full start message with navigation buttons
-        today = datetime.now(IST).date()
-        day_num = (today - CHALLENGE_START_DATE.date()).days + 1
-        days_left = CHALLENGE_DAYS - day_num + 1
-        challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
-        motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
-        msg = (
-            "<b>👋 Welcome to LMS 6.0!</b>\n\n"
-            "<b>Navigation & Commands:</b>\n"
-            "Use the buttons below to navigate.\n\n"
-            f"<b>Challenge Info:</b>\n"
-            f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
-            f"• <b>End Date:</b> {challenge_end}\n"
-            f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
-            f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
-            f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 20:00-21:00\n• Motivation: {motivation_times}\n\n"
-            "<b>Poll Options:</b>\n"
-            + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-            "\n\n<b>Tip:</b> Use the navigation buttons below!\n"
-            "<i>All commands are admin-only.</i>\n\n"
-            "<b>Relapse Ban Info:</b>\nIf you use /relapse and confirm, you will be permanently banned from the group. "
-            "Ban messages will be auto-deleted after 3-5 minutes to reduce spam."
-        )
+        # Go Back or unknown: show full start message with navigation buttons (concise, in sync)
+        msg = get_start_message()
         keyboard = [
             [
                 InlineKeyboardButton("📊 Polls", callback_data="nav_polls"),
@@ -303,7 +293,7 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     import random
-    delete_seconds = random.randint(120, 180)
+    delete_seconds = random.randint(30, 70)
     if not challenge_started:
         msg = (
             f"🚫 The LMS challenge hasn't started yet!\n\n"
@@ -333,7 +323,7 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n\n"
         f"You have lasted <b>{day_num if day_num > 0 else 0}</b> days in LMS.\n\n"
         f"Are you sure you want to proceed?\n\n"
-        f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
+        f"<b>You need to select quickly, this message will be auto-deleted in {delete_seconds} seconds!</b>"
     )
     keyboard = [
         [
@@ -363,7 +353,7 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query:
             await query.answer()
         return
-    delete_seconds = random.randint(120, 180)
+    delete_seconds = random.randint(30, 70)
     if data.startswith("relapse_yes_"):
         # Ban and kick user
         group_id = GROUP_CHAT_ID
