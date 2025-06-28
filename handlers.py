@@ -351,11 +351,18 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.ban_chat_member(chat_id=group_id, user_id=user.id)
             await context.bot.send_message(
                 chat_id=group_id,
-                text=f"🚫 User <b>{user.full_name}</b> (<code>{user.id}</code>) has been <b>banned</b> from the group for relapsing and losing the LMS challenge.",
+                text=f"🚫 User <code>{user.id}</code> has been <b>banned</b> from the group for relapsing and losing the LMS challenge.",
                 parse_mode="HTML"
             )
             await query.edit_message_text(
-                text=f"🚫 You have been banned from the group for relapsing and losing the LMS challenge."
+                text=(
+                    f"🚫 <b>Banned from LMS Group</b>\n\n"
+                    f"User ID: <code>{user.id}</code> has been <b>permanently banned</b> from the group for relapsing and losing the LMS challenge.\n\n"
+                    f"<b>User ID:</b> <code>{user.id}</code>\n"
+                    f"<b>Reason:</b> Relapse registered during LMS challenge.\n\n"
+                    f"Stay strong and try again next time!"
+                ),
+                parse_mode="HTML"
             )
         except Exception as e:
             await query.edit_message_text(
