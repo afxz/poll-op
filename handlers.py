@@ -6,6 +6,7 @@ from utils import admin_only
 from datetime import datetime, timedelta, time as dtime
 import logging
 import pytz
+import re
 
 logger = logging.getLogger(__name__)
 IST = pytz.timezone('Asia/Kolkata')
@@ -22,6 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>Navigation & Commands:</b>\n"
         "• <b>/poll</b> — Send a test poll to the group.\n"
         "• <b>/testpoll</b> — Test poll in your DM.\n"
+        "• <b>/testmotivation</b> — Send a test motivational message in the group.\n"
         "• <b>/stats</b> — View LMS stats.\n"
         "• <b>/start</b> — Show this menu.\n\n"
         f"<b>Challenge Info:</b>\n"
@@ -29,10 +31,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• <b>End Date:</b> {challenge_end}\n"
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
         f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
-        f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 19:00-20:00\n• Motivation: {motivation_times}\n\n"
+        f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 20:00-21:00\n• Motivation: {motivation_times}\n\n"
         "<b>Poll Options:</b>\n"
         + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-        "\n\n<b>Tip:</b> Use /poll any time to test the poll in the group!\n"
+        "\n\n<b>Tip:</b> Use /poll or /testmotivation any time to test in the group!\n"
         "<i>All commands are admin-only.</i>"
     )
     if update.message:
@@ -120,7 +122,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>End Date:</b> {challenge_end}\n"
         f"<b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
         f"<b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
-        f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 19:00-20:00\n• Motivation: {motivation_times}\n\n"
+        f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 20:00-21:00\n• Motivation: {motivation_times}\n\n"
         f"<b>Group ID:</b> <code>{GROUP_CHAT_ID}</code>\n"
         f"<b>Admin ID:</b> <code>{ADMIN_ID}</code>\n"
         "<i>All times are in Indian Standard Time (IST).</i>"
@@ -130,17 +132,46 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @admin_only
 async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    today = datetime.now().date()
+    today = datetime.now(IST).date()
     date_str = today.strftime('%d/%m/%Y')
-    question = f"[ Test Poll : How was your day? {date_str} 🌌 ]\n(Only visible to you)"
-    await context.bot.send_poll(
-        chat_id=ADMIN_ID,
-        question=question,
-        options=POLL_OPTIONS,
-        is_anonymous=False
-    )
+    question = f"[ Test Poll : How was your day? {date_str} 🌌 ]\nKeep pushing forward, every day is a win!\n(This is a test poll for the group)"
+    try:
+        poll_msg = await context.bot.send_poll(
+            chat_id=GROUP_CHAT_ID,
+            question=question,
+            options=POLL_OPTIONS,
+            is_anonymous=False
+        )
+        # Pin the poll
+        try:
+            await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
+            # Service message deletion is not possible via Telegram Bot API as of 2025.
+            # This is a Telegram limitation and cannot be worked around.
+        except Exception as e:
+            logger.warning(f"Failed to pin poll: {e}")
+        # Reply to the poll with a positive LMS message
+        try:
+            await context.bot.send_message(
+                chat_id=GROUP_CHAT_ID,
+                text="Test poll sent! Cast your vote and check poll visibility.",
+                reply_to_message_id=poll_msg.message_id
+            )
+        except Exception as e:
+            logger.warning(f"Failed to reply to poll: {e}")
+    except Exception as e:
+        logger.error(f"Failed to send test poll: {e}")
     if update.message:
-        await update.message.reply_text("Test poll sent to your DM! Check your saved messages.")
+        await update.message.reply_text("Test poll sent to the group!")
+
+@admin_only
+async def testmotivation_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = get_motivation()
+    # Replace markdown bold **text** with Telegram HTML <b>text</b>
+    msg = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', msg)
+    if GROUP_CHAT_ID:
+        await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg, parse_mode="HTML")
+    if update.message:
+        await update.message.reply_text("Test motivational message sent to the group!", parse_mode="HTML")
 
 async def ignore_nonadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id if update.effective_user else None
@@ -149,5 +180,7 @@ async def ignore_nonadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def send_motivation(context: ContextTypes.DEFAULT_TYPE):
     msg = get_motivation()
+    # Replace markdown bold **text** with Telegram HTML <b>text</b>
+    msg = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', msg)
     if GROUP_CHAT_ID:
-        await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg)
+        await context.bot.send_message(chat_id=GROUP_CHAT_ID, text=msg, parse_mode="HTML")
