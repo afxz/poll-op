@@ -19,7 +19,12 @@ def get_motivation():
     try:
         resp = requests.post(url, headers=headers, json=data, timeout=10)
         resp.raise_for_status()
-        return resp.json()['candidates'][0]['content']['parts'][0]['text']
+        text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+        # Remove leading 'Day X:', 'Day [number]:', etc.
+        import re
+        text = re.sub(r'^\s*Day\s*\d+\s*[:\-–—]?\s*', '', text, flags=re.IGNORECASE)
+        text = text.strip()
+        return text
     except Exception as e:
         logging.error(f"Gemini API error: {e}")
         return "Stay strong! Every day you resist, you become the master of your mind."

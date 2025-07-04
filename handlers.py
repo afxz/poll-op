@@ -161,16 +161,15 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
         ]
         quote = random.choice(poll_quotes)
         question = (
-            f"{emoji} <b>LMS Day {day_num}</b> — How was your day? <i>({date_str})</i>\n"
-            f"<i>{quote}</i>"
+            f"{emoji} LMS Day {day_num} — How was your day? ({date_str})\n"
+            f"{quote}"
         )
         try:
             poll_msg = await context.bot.send_poll(
                 chat_id=GROUP_CHAT_ID,
                 question=question,
                 options=POLL_OPTIONS,
-                is_anonymous=False,
-                parse_mode="HTML"
+                is_anonymous=False
             )
             logger.info(f"Poll sent successfully: message_id={poll_msg.message_id}")
             # Pin the poll
@@ -218,16 +217,15 @@ async def poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     quote = random.choice(poll_quotes)
     question = (
-        f"{emoji} <b>LMS Day {day_num}</b> — How was your day? <i>({date_str})</i>\n"
-        f"<i>{quote}</i>\n(This is a test poll for the group)"
+        f"{emoji} LMS Day {day_num} — How was your day? ({date_str})\n"
+        f"{quote}\n(This is a test poll for the group)"
     )
     try:
         poll_msg = await context.bot.send_poll(
             chat_id=GROUP_CHAT_ID,
             question=question,
             options=POLL_OPTIONS,
-            is_anonymous=False,
-            parse_mode="HTML"
+            is_anonymous=False
         )
         # Pin the poll
         try:
@@ -297,16 +295,15 @@ async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     quote = random.choice(poll_quotes)
     question = (
-        f"{emoji} <b>LMS Day {day_num}</b> — How was your day? <i>({date_str})</i>\n"
-        f"<i>{quote}</i>\n(This is a test poll for the group)"
+        f"{emoji} LMS Day {day_num} — How was your day? ({date_str})\n"
+        f"{quote}\n(This is a test poll for the group)"
     )
     try:
         poll_msg = await context.bot.send_poll(
             chat_id=GROUP_CHAT_ID,
             question=question,
             options=POLL_OPTIONS,
-            is_anonymous=False,
-            parse_mode="HTML"
+            is_anonymous=False
         )
         # Pin the poll
         try:
