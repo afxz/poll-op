@@ -436,8 +436,12 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only allow the user who triggered the command to interact
     # The callback_data is relapse_yes_{user_id} or relapse_no_{user_id}
     try:
-        action, _, target_id = data.partition('_')[2].partition('_')
-        target_id = int(target_id)
+        # Extract user id from callback_data
+        if data.startswith("relapse_yes_") or data.startswith("relapse_no_"):
+            target_id = int(data.split('_')[-1])
+        else:
+            await query.answer("Invalid action.", show_alert=True)
+            return
     except Exception:
         await query.answer("Invalid action.", show_alert=True)
         return
@@ -487,18 +491,24 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text(
                 text=f"❌ Failed to ban user: {e}"
             )
+        await query.answer()
     elif data.startswith("relapse_no_"):
         warn_msg = (
             f"⚠️ <b>{user.mention_html()}</b>, please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences.\n\n"
             f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
         )
-        await query.edit_message_text(text=warn_msg, parse_mode="HTML")
+        try:
+            await query.edit_message_text(text=warn_msg, parse_mode="HTML")
+        except Exception:
+            pass
+        await query.answer()
         await asyncio.sleep(delete_seconds)
         try:
             await query.delete_message()
         except Exception:
             pass
-    await query.answer()
+    else:
+        await query.answer()
 
 # Register navigation callback handler at the end of the file
 # (Make sure to add this handler in bot.py as well)
