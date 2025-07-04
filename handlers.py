@@ -138,27 +138,51 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Attempting to send poll: day_num={day_num}, group_id={GROUP_CHAT_ID}")
     if 1 <= day_num <= CHALLENGE_DAYS and GROUP_CHAT_ID:
         date_str = today.strftime('%d/%m/%Y')
-        question = f"[ Poll : How was your day? {date_str} 🌌 ]\nKeep pushing forward, every day is a win!"
+        # Modern poll title with random emoji and day
+        poll_emojis = ['🔥', '💪', '🌟', '🚀', '🦾', '🏆', '🛡️', '🧠', '🌞', '✨', '🦁', '🕊️', '🧘', '🎯', '🕹️']
+        emoji = random.choice(poll_emojis)
+        # Short, random nofap motivational quotes
+        poll_quotes = [
+            "Discipline is choosing between what you want now and what you want most.",
+            "Every urge resisted is a victory.",
+            "You are stronger than your urges.",
+            "Progress, not perfection.",
+            "Stay focused. Stay free.",
+            "Your future self will thank you.",
+            "One day at a time. You got this!",
+            "Greatness is built on self-control.",
+            "Keep your streak, keep your power.",
+            "Real strength is in saying NO.",
+            "The best project you’ll ever work on is you.",
+            "Win today. Repeat tomorrow.",
+            "You’re not alone. We rise together.",
+            "Small wins, big results.",
+            "Your mind is your greatest weapon."
+        ]
+        quote = random.choice(poll_quotes)
+        question = (
+            f"{emoji} <b>LMS Day {day_num}</b> — How was your day? <i>({date_str})</i>\n"
+            f"<i>{quote}</i>"
+        )
         try:
             poll_msg = await context.bot.send_poll(
                 chat_id=GROUP_CHAT_ID,
                 question=question,
                 options=POLL_OPTIONS,
-                is_anonymous=False
+                is_anonymous=False,
+                parse_mode="HTML"
             )
             logger.info(f"Poll sent successfully: message_id={poll_msg.message_id}")
             # Pin the poll
             try:
                 await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
-                # Service message deletion is not possible via Telegram Bot API as of 2025.
-                # This is a Telegram limitation and cannot be worked around.
             except Exception as e:
                 logger.warning(f"Failed to pin poll: {e}")
             # Reply to the poll with a positive LMS message
             try:
                 await context.bot.send_message(
                     chat_id=GROUP_CHAT_ID,
-                    text="Cast your vote! Every day counts in LMS. Let's keep each other accountable!",
+                    text="Cast your vote! Every day counts. Stay strong, warriors!",
                     reply_to_message_id=poll_msg.message_id
                 )
             except Exception as e:
@@ -171,20 +195,43 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
 @admin_only
 async def poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now(IST).date()
+    day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     date_str = today.strftime('%d/%m/%Y')
-    question = f"[ Test Poll : How was your day? {date_str} 🌌 ]\nKeep pushing forward, every day is a win!\n(This is a test poll for the group)"
+    poll_emojis = ['🔥', '💪', '🌟', '🚀', '🦾', '🏆', '🛡️', '🧠', '🌞', '✨', '🦁', '🕊️', '🧘', '🎯', '🕹️']
+    emoji = random.choice(poll_emojis)
+    poll_quotes = [
+        "Discipline is choosing between what you want now and what you want most.",
+        "Every urge resisted is a victory.",
+        "You are stronger than your urges.",
+        "Progress, not perfection.",
+        "Stay focused. Stay free.",
+        "Your future self will thank you.",
+        "One day at a time. You got this!",
+        "Greatness is built on self-control.",
+        "Keep your streak, keep your power.",
+        "Real strength is in saying NO.",
+        "The best project you’ll ever work on is you.",
+        "Win today. Repeat tomorrow.",
+        "You’re not alone. We rise together.",
+        "Small wins, big results.",
+        "Your mind is your greatest weapon."
+    ]
+    quote = random.choice(poll_quotes)
+    question = (
+        f"{emoji} <b>LMS Day {day_num}</b> — How was your day? <i>({date_str})</i>\n"
+        f"<i>{quote}</i>\n(This is a test poll for the group)"
+    )
     try:
         poll_msg = await context.bot.send_poll(
             chat_id=GROUP_CHAT_ID,
             question=question,
             options=POLL_OPTIONS,
-            is_anonymous=False
+            is_anonymous=False,
+            parse_mode="HTML"
         )
         # Pin the poll
         try:
             await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
-            # Service message deletion is not possible via Telegram Bot API as of 2025.
-            # This is a Telegram limitation and cannot be worked around.
         except Exception as e:
             logger.warning(f"Failed to pin poll: {e}")
         # Reply to the poll with a positive LMS message
@@ -227,20 +274,43 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @admin_only
 async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now(IST).date()
+    day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     date_str = today.strftime('%d/%m/%Y')
-    question = f"[ Test Poll : How was your day? {date_str} 🌌 ]\nKeep pushing forward, every day is a win!\n(This is a test poll for the group)"
+    poll_emojis = ['🔥', '💪', '🌟', '🚀', '🦾', '🏆', '🛡️', '🧠', '🌞', '✨', '🦁', '🕊️', '🧘', '🎯', '🕹️']
+    emoji = random.choice(poll_emojis)
+    poll_quotes = [
+        "Discipline is choosing between what you want now and what you want most.",
+        "Every urge resisted is a victory.",
+        "You are stronger than your urges.",
+        "Progress, not perfection.",
+        "Stay focused. Stay free.",
+        "Your future self will thank you.",
+        "One day at a time. You got this!",
+        "Greatness is built on self-control.",
+        "Keep your streak, keep your power.",
+        "Real strength is in saying NO.",
+        "The best project you’ll ever work on is you.",
+        "Win today. Repeat tomorrow.",
+        "You’re not alone. We rise together.",
+        "Small wins, big results.",
+        "Your mind is your greatest weapon."
+    ]
+    quote = random.choice(poll_quotes)
+    question = (
+        f"{emoji} <b>LMS Day {day_num}</b> — How was your day? <i>({date_str})</i>\n"
+        f"<i>{quote}</i>\n(This is a test poll for the group)"
+    )
     try:
         poll_msg = await context.bot.send_poll(
             chat_id=GROUP_CHAT_ID,
             question=question,
             options=POLL_OPTIONS,
-            is_anonymous=False
+            is_anonymous=False,
+            parse_mode="HTML"
         )
         # Pin the poll
         try:
             await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
-            # Service message deletion is not possible via Telegram Bot API as of 2025.
-            # This is a Telegram limitation and cannot be worked around.
         except Exception as e:
             logger.warning(f"Failed to pin poll: {e}")
         # Reply to the poll with a positive LMS message
@@ -318,9 +388,9 @@ async def relapse_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
         return
-    # Show confirmation with inline buttons
+    # Show confirmation with inline buttons, mention user
     msg = (
-        f"⚠️ <b>Are you sure you want to register a relapse?</b>\n\n"
+        f"⚠️ <b>{user.mention_html()} — Are you sure you want to register a relapse?</b>\n\n"
         f"If you click <b>YES</b>, you are officially admitting that you have lost the challenge and will be <b>permanently banned</b> from the group.\n\n"
         f"<b>Challenge Info:</b>\n"
         f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
@@ -365,6 +435,17 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not user or user.id == ADMIN_ID or not data:
         if query:
             await query.answer()
+        return
+    # Only allow the user who triggered the command to interact
+    # The callback_data is relapse_yes_{user_id} or relapse_no_{user_id}
+    try:
+        action, _, target_id = data.partition('_')[2].partition('_')
+        target_id = int(target_id)
+    except Exception:
+        await query.answer("Invalid action.", show_alert=True)
+        return
+    if user.id != target_id:
+        await query.answer("This button is not for you.", show_alert=True)
         return
     delete_seconds = random.randint(55, 77)
     if data.startswith("relapse_yes_"):
@@ -411,10 +492,10 @@ async def relapse_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
     elif data.startswith("relapse_no_"):
         warn_msg = (
-            f"⚠️ Please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences.\n\n"
+            f"⚠️ <b>{user.mention_html()}</b>, please do not joke around with the /relapse command. Only use it if you have truly lost the challenge. Misuse may result in consequences.\n\n"
             f"<i>This message will be auto-deleted in {delete_seconds} seconds.</i>"
         )
-        await query.edit_message_text(text=warn_msg)
+        await query.edit_message_text(text=warn_msg, parse_mode="HTML")
         await asyncio.sleep(delete_seconds)
         try:
             await query.delete_message()
