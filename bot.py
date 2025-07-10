@@ -20,6 +20,8 @@ def main():
     app.add_handler(CommandHandler("testmotivation", testmotivation_command))
     app.add_handler(CommandHandler("relapse", relapse_command))
     app.add_handler(CommandHandler("emotionpoll", emotion_poll_command))
+    app.add_handler(CommandHandler("setlmspolltime", set_lms_poll_time))
+    app.add_handler(CommandHandler("setemotionpolltime", set_emotion_poll_time))
     app.add_handler(CallbackQueryHandler(relapse_callback, pattern="^relapse_"))
     app.add_handler(CallbackQueryHandler(nav_callback, pattern="^nav_"))
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))

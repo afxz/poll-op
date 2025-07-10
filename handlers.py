@@ -1,10 +1,43 @@
+@admin_only
+async def set_lms_poll_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg_obj = update.message
+    if not msg_obj or not context.args or len(context.args) != 1:
+        await msg_obj.reply_text("Usage: /setlmspolltime HH:MM (24h IST)")
+        return
+    new_time = context.args[0]
+    import re
+    if not re.match(r"^\d{2}:\d{2}$", new_time):
+        await msg_obj.reply_text("Invalid time format. Use HH:MM (24h IST)")
+        return
+    import os
+    os.environ['LMS_POLL_TIME'] = new_time
+    await msg_obj.reply_text(f"LMS poll time updated to {new_time} IST. Please restart the bot to apply changes.")
+
+@admin_only
+async def set_emotion_poll_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg_obj = update.message
+    if not msg_obj or not context.args or len(context.args) != 1:
+        await msg_obj.reply_text("Usage: /setemotionpolltime HH:MM (24h IST)")
+        return
+    new_time = context.args[0]
+    import re
+    if not re.match(r"^\d{2}:\d{2}$", new_time):
+        await msg_obj.reply_text("Invalid time format. Use HH:MM (24h IST)")
+        return
+    import os
+    os.environ['EMOTION_POLL_TIME'] = new_time
+    await msg_obj.reply_text(f"Emotional state poll time updated to {new_time} IST. Please restart the bot to apply changes.")
 from config import POLL_OPTIONS, ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, EMOTIONAL_STATE_OPTIONS
 # Emotional state poll command
 @admin_only
 async def emotion_poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now(IST).date()
+    day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     date_str = today.strftime('%d/%m/%Y')
-    question = f"🧠 Emotional State Check — How are you feeling right now? ({date_str})"
+    question = (
+        f"🧠 Emotional State Check — How are you feeling right now?\n"
+        f"LMS Day {day_num if day_num > 0 else 0} ({date_str})"
+    )
     options = EMOTIONAL_STATE_OPTIONS.copy()
     random.shuffle(options)
     try:
