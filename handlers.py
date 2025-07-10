@@ -83,6 +83,7 @@ def get_start_message():
     days_left = CHALLENGE_DAYS - day_num + 1
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
+    from config import LMS_POLL_TIME, EMOTION_POLL_TIME
     return (
         "<b>👋 Welcome to LMS 6.0!</b>\n\n"
         "<b>Challenge Info:</b>\n"
@@ -90,7 +91,7 @@ def get_start_message():
         f"• <b>End Date:</b> {challenge_end}\n"
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
         f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
-        f"<b>Auto Posting Times (IST):</b>\n• Poll: Random between 20:00-21:00\n• Motivation: {motivation_times}\n\n"
+        f"<b>Auto Posting Times (IST):</b>\n• Poll: {LMS_POLL_TIME} (LMS)\n• Poll: {EMOTION_POLL_TIME} (Emotional State)\n• Motivation: {motivation_times}\n\n"
         "<b>Use the navigation buttons below to explore all features and commands.</b>\n"
         "<i>All commands are admin-only.</i>"
     )
@@ -129,12 +130,14 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     days_left = CHALLENGE_DAYS - day_num + 1
     challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
     motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
+    from config import LMS_POLL_TIME, EMOTION_POLL_TIME
     if data == "nav_polls":
         msg = (
             "<b>📊 Polls</b>\n\n"
             "• <b>/poll</b> — Send a test poll to the group.\n"
             "• <b>/testpoll</b> — Test poll in your DM.\n"
             "• <b>/emotionpoll</b> — Emotional state check poll.\n\n"
+            f"<b>Poll Times (IST):</b> LMS: {LMS_POLL_TIME}, Emotional: {EMOTION_POLL_TIME}\n"
             "<b>Poll Options:</b>\n"
             + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)])
         )
@@ -142,6 +145,7 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg = (
             "<b>🧠 Emotional State Check</b>\n\n"
             "• <b>/emotionpoll</b> — Post an emotional state check poll in the group.\n\n"
+            f"<b>Poll Time (IST):</b> {EMOTION_POLL_TIME}\n"
             "<b>Emotional State Options:</b>\n"
             + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(EMOTIONAL_STATE_OPTIONS)])
         )
