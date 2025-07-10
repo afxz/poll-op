@@ -1,3 +1,4 @@
+import os
 LMS_POLL_TIME = os.getenv('LMS_POLL_TIME', '20:00')  # Default 8:00 PM IST
 EMOTION_POLL_TIME = os.getenv('EMOTION_POLL_TIME', '14:00')  # Default 2:00 PM IST
 EMOTIONAL_STATE_OPTIONS = [
@@ -12,7 +13,6 @@ EMOTIONAL_STATE_OPTIONS = [
     "😕 Confused or lost",
     "🙁 Lonely or isolated"
 ]
-import os
 from datetime import datetime, time
 from dotenv import load_dotenv
 

@@ -1,7 +1,7 @@
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from config import TELEGRAM_TOKEN
-from handlers import start, poll_command, stats_command, testpoll_command, testmotivation_command, ignore_nonadmin, relapse_command, relapse_callback, nav_callback
+from handlers import start, poll_command, stats_command, testpoll_command, testmotivation_command, ignore_nonadmin, relapse_command, relapse_callback, nav_callback, emotion_poll_command, set_lms_poll_time, set_emotion_poll_time
 from jobs import schedule_jobs
 
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(message)s')

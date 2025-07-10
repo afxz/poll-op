@@ -1,7 +1,13 @@
+from utils import admin_only
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes, CallbackQueryHandler
+
 @admin_only
 async def set_lms_poll_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_obj = update.message
-    if not msg_obj or not context.args or len(context.args) != 1:
+    if not msg_obj:
+        return
+    if not context.args or len(context.args) != 1:
         await msg_obj.reply_text("Usage: /setlmspolltime HH:MM (24h IST)")
         return
     new_time = context.args[0]
@@ -16,7 +22,9 @@ async def set_lms_poll_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @admin_only
 async def set_emotion_poll_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_obj = update.message
-    if not msg_obj or not context.args or len(context.args) != 1:
+    if not msg_obj:
+        return
+    if not context.args or len(context.args) != 1:
         await msg_obj.reply_text("Usage: /setemotionpolltime HH:MM (24h IST)")
         return
     new_time = context.args[0]
@@ -27,7 +35,21 @@ async def set_emotion_poll_time(update: Update, context: ContextTypes.DEFAULT_TY
     import os
     os.environ['EMOTION_POLL_TIME'] = new_time
     await msg_obj.reply_text(f"Emotional state poll time updated to {new_time} IST. Please restart the bot to apply changes.")
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes, CallbackQueryHandler
 from config import POLL_OPTIONS, ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, EMOTIONAL_STATE_OPTIONS
+from motivation import get_motivation
+from utils import admin_only
+from datetime import datetime, timedelta, time as dtime
+import logging
+import pytz
+import re
+import asyncio
+import random
+
+logger = logging.getLogger(__name__)
+IST = pytz.timezone('Asia/Kolkata')
 # Emotional state poll command
 @admin_only
 async def emotion_poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
