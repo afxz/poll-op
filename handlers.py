@@ -1,3 +1,34 @@
+from config import POLL_OPTIONS, ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, EMOTIONAL_STATE_OPTIONS
+# Emotional state poll command
+@admin_only
+async def emotion_poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    today = datetime.now(IST).date()
+    date_str = today.strftime('%d/%m/%Y')
+    question = f"🧠 Emotional State Check — How are you feeling right now? ({date_str})"
+    options = EMOTIONAL_STATE_OPTIONS.copy()
+    random.shuffle(options)
+    try:
+        poll_msg = await context.bot.send_poll(
+            chat_id=GROUP_CHAT_ID,
+            question=question,
+            options=options,
+            is_anonymous=False
+        )
+        logger.info(f"Emotional state poll sent: message_id={poll_msg.message_id}")
+        try:
+            await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
+        except Exception as e:
+            logger.warning(f"Failed to pin emotional state poll: {e}")
+        try:
+            await context.bot.send_message(
+                chat_id=GROUP_CHAT_ID,
+                text="Log your emotions! It's okay to feel however you feel. 💙\n\n$EmotionalLog",
+                reply_to_message_id=poll_msg.message_id
+            )
+        except Exception as e:
+            logger.warning(f"Failed to reply to emotional state poll: {e}")
+    except Exception as e:
+        logger.error(f"Failed to send emotional state poll: {e}")
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from config import POLL_OPTIONS, ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES
@@ -40,7 +71,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("💡 Motivation", callback_data="nav_motivation")
         ],
         [
-            InlineKeyboardButton("📈 Stats", callback_data="nav_stats"),
+            InlineKeyboardButton("🧠 Emotion", callback_data="nav_emotion"),
+            InlineKeyboardButton("📈 Stats", callback_data="nav_stats")
+        ],
+        [
             InlineKeyboardButton("🚨 Relapse", callback_data="nav_relapse")
         ]
     ]
@@ -66,10 +100,28 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg = (
             "<b>📊 Polls</b>\n\n"
             "• <b>/poll</b> — Send a test poll to the group.\n"
-            "• <b>/testpoll</b> — Test poll in your DM.\n\n"
+            "• <b>/testpoll</b> — Test poll in your DM.\n"
+            "• <b>/emotionpoll</b> — Emotional state check poll.\n\n"
             "<b>Poll Options:</b>\n"
             + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)])
         )
+    elif data == "nav_emotion":
+        msg = (
+            "<b>🧠 Emotional State Check</b>\n\n"
+            "• <b>/emotionpoll</b> — Post an emotional state check poll in the group.\n\n"
+            "<b>Emotional State Options:</b>\n"
+            + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(EMOTIONAL_STATE_OPTIONS)])
+        )
+        keyboard = [
+            [InlineKeyboardButton("🔙 Go Back", callback_data="nav_home")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        current_msg = getattr(query.message, 'text', None)
+        current_markup = getattr(query.message, 'reply_markup', None)
+        if current_msg != msg or current_markup != reply_markup:
+            await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+        await query.answer()
+        return
     elif data == "nav_motivation":
         msg = (
             "<b>💡 Motivation</b>\n\n"
@@ -180,11 +232,11 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
             except Exception as e:
                 logger.warning(f"Failed to pin poll: {e}")
-            # Reply to the poll with a positive LMS message
+            # Reply to the poll with a positive LMS message and a $ tag for navigation
             try:
                 await context.bot.send_message(
                     chat_id=GROUP_CHAT_ID,
-                    text="Cast your vote! Every day counts. Stay strong, warriors!",
+                    text="Cast your vote! Every day counts. Stay strong, warriors!\n\n$DailyCheckIn",
                     reply_to_message_id=poll_msg.message_id
                 )
             except Exception as e:
@@ -238,11 +290,11 @@ async def poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.pin_chat_message(chat_id=GROUP_CHAT_ID, message_id=poll_msg.message_id, disable_notification=True)
         except Exception as e:
             logger.warning(f"Failed to pin poll: {e}")
-        # Reply to the poll with a positive LMS message
+        # Reply to the poll with a positive LMS message and a $ tag for navigation
         try:
             await context.bot.send_message(
                 chat_id=GROUP_CHAT_ID,
-                text="Test poll sent! Cast your vote and check poll visibility.",
+                text="Test poll sent! Cast your vote and check poll visibility.\n\n$DailyCheckIn",
                 reply_to_message_id=poll_msg.message_id
             )
         except Exception as e:

@@ -1,3 +1,15 @@
+EMOTIONAL_STATE_OPTIONS = [
+    "😊 Happy and positive",
+    "😐 Neutral/okay",
+    "😔 Sad or down",
+    "😠 Angry or frustrated",
+    "😰 Anxious or stressed",
+    "😤 Motivated and determined",
+    "😴 Tired or exhausted",
+    "🤗 Grateful or content",
+    "😕 Confused or lost",
+    "🙁 Lonely or isolated"
+]
 import os
 from datetime import datetime, time
 from dotenv import load_dotenv

@@ -14,6 +14,13 @@ async def schedule_jobs(app):
     # Convert IST to UTC
     poll_time_utc = (datetime.combine(now.date(), poll_time_ist) - timedelta(hours=5, minutes=30)).time()
     app.job_queue.run_daily(send_daily_poll, poll_time_utc)
+
+    # Schedule emotional state poll at 11:00 AM IST
+    from handlers import emotion_poll_command
+    emotion_time_ist = time(11, 0)
+    emotion_time_utc = (datetime.combine(now.date(), emotion_time_ist) - timedelta(hours=5, minutes=30)).time()
+    app.job_queue.run_daily(emotion_poll_command, emotion_time_utc)
+
     # Schedule motivational messages at 5:00 AM, 12:00 PM, and 8:00 PM IST
     for t in MOTIVATION_TIMES:
         # Convert IST to UTC
