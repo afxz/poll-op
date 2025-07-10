@@ -165,10 +165,13 @@ async def send_daily_poll(context: ContextTypes.DEFAULT_TYPE):
             f"{quote}"
         )
         try:
+            from config import POLL_OPTIONS
+            options = POLL_OPTIONS.copy()
+            random.shuffle(options)
             poll_msg = await context.bot.send_poll(
                 chat_id=GROUP_CHAT_ID,
                 question=question,
-                options=POLL_OPTIONS,
+                options=options,
                 is_anonymous=False
             )
             logger.info(f"Poll sent successfully: message_id={poll_msg.message_id}")
@@ -221,10 +224,13 @@ async def poll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"{quote}\n(This is a test poll for the group)"
     )
     try:
+        from config import POLL_OPTIONS
+        options = POLL_OPTIONS.copy()
+        random.shuffle(options)
         poll_msg = await context.bot.send_poll(
             chat_id=GROUP_CHAT_ID,
             question=question,
-            options=POLL_OPTIONS,
+            options=options,
             is_anonymous=False
         )
         # Pin the poll

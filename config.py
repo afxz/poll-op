@@ -17,6 +17,7 @@ POLL_OPTIONS = [
     "🏃‍♂️ Did exercise today",
     "📚 Productive day overall",
     "😐 Struggled, but didn't relapse",
+    "😓 Unproductive day, but didn't relapse",
     "❌ Relapsed today"
 ]
 MOTIVATION_TIMES = [
