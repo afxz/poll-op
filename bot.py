@@ -31,6 +31,8 @@ def main():
     app.add_handler(CommandHandler("canvadroplink", canva_droplink_command))
     app.add_handler(CommandHandler("droplink", droplink_command))
     app.add_handler(CallbackQueryHandler(nav_callback, pattern="^nav_"))
+
+    # MessageHandler must be last so it doesn't block CallbackQueryHandler
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))
     logger.warning("LMS Bot started.")
     app.run_polling()
