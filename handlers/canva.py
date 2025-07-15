@@ -63,17 +63,21 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
         return
     post_text = (
         "<b>NEW CANVA LINK ❤️✅</b>\n"
-        f"{short_url}\n{short_url}\n\n"
-        f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\"><u>HOW TO JOIN TUTORIAL</u></a> 🧑‍💻</b>\n\n"
-        f"<b>🖼 Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\"><u>@aenzBot</u></a>.\n\n"
-        f"<b>⚠️ JOIN BACKUP ⚡️</b> <a href=\"{CANVA_PROOF_URL}\"><u>{CANVA_PROOF_URL}</u></a>"
+        f"<b><u>{short_url}</u></b>\n<b><u>{short_url}</u></b>\n\n"
+        f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\">HOW TO JOIN TUTORIAL</a> 🧑‍💻</b>\n\n"
+        f"<b>🖼 Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a>.\n"
     )
+    from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("⚠️ JOIN BACKUP ⚡️", url=CANVA_PROOF_URL)]
+    ])
     try:
         await context.bot.send_photo(
             chat_id=channel_id,
             photo=CANVA_PREVIEW_IMAGE,
             caption=post_text,
-            parse_mode="HTML"
+            parse_mode="HTML",
+            reply_markup=reply_markup
         )
         if msg_obj:
             await msg_obj.reply_text("Posted to channel successfully!")
