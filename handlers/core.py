@@ -28,6 +28,7 @@ def get_start_message():
         f"<b>Auto Posting Times (IST):</b>\n• Poll: {LMS_POLL_TIME} (LMS)\n• Poll: {EMOTION_POLL_TIME} (Emotional State)\n• Motivation: {motivation_times}\n\n"
         "<b>Key Features:</b>\n"
         "• <b>/canvadroplink</b> — Shorten a Canva invite link and post to the Canva channel.\n"
+        "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n"
         "<b>Use the navigation buttons below to explore all features and commands.</b>\n"
         "<i>All commands are admin-only.</i>"
     )
@@ -55,10 +56,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    logger.info(f"CallbackQuery received: data={getattr(query, 'data', None)} from user={getattr(update.effective_user, 'id', None)}")
     if not query:
+        logger.warning("No callback_query in update!")
         return
     data = getattr(query, 'data', None)
     if not data:
+        logger.warning("No callback data in callback_query!")
         return
     today = datetime.now(IST).date()
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
@@ -75,7 +79,8 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<b>Poll Times (IST):</b> LMS: {LMS_POLL_TIME}, Emotional: {EMOTION_POLL_TIME}\n"
             "<b>Poll Options:</b>\n"
             + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-            "\n\n<b>Other:</b>\n• <b>/canvadroplink</b> — Shorten a Canva invite link and post to the Canva channel."
+            "\n\n<b>Other:</b>\n• <b>/canvadroplink</b> — Shorten a Canva invite link and post to the Canva channel.\n"
+            "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink."
         )
     elif data == "nav_emotion":
         msg = (
@@ -114,12 +119,13 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     elif data == "nav_canva":
         msg = (
-            "<b>🌊 Canva Feature</b>\n\n"
-            "• <b>/canvadroplink &lt;canva-invite-link&gt; [custom-alias]</b> — Shorten a Canva invite link and post to the Canva channel.\n\n"
+            "<b>🌊 Canva & Droplink Features</b>\n\n"
+            "• <b>/canvadroplink &lt;canva-invite-link&gt; [custom-alias]</b> — Shorten a Canva invite link and post to the Canva channel.\n"
+            "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n\n"
             "<b>How it works:</b>\n"
-            "1. Use the command with a Canva invite link.\n"
-            "2. The bot will shorten the link using Droplink and post it to the designated Canva channel with a tutorial and proof.\n\n"
-            "<i>Only admins can use this command.</i>"
+            "1. Use the command with a Canva invite link or any URL.\n"
+            "2. The bot will shorten the link using Droplink. For Canva, it posts to the designated Canva channel with a tutorial and proof. For any other link, it replies with the shortlink.\n\n"
+            "<i>Only admins can use these commands.</i>"
         )
         keyboard = [
             [InlineKeyboardButton("🔙 Go Back", callback_data="nav_home")]
