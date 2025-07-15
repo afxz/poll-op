@@ -38,12 +38,10 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
         return
     post_text = (
         "<b>NEW CANVA LINK ❤️✅</b>\n"
-        f"<a href=\"{short_url}\">{short_url}</a>\n"
-        f"<a href=\"{short_url}\">{short_url}</a>\n"
-        f"<a href=\"{short_url}\">{short_url}</a>\n\n"
-        f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\">HOW TO JOIN TUTORIAL</a> 🧑‍💻</b>\n\n"
-        f"🖼 <b>Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a>.\n\n"
-        f"<b>⚠️ JOIN BACKUP ⚡️</b>"
+        f"{short_url}\n{short_url}\n\n"
+        f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\"><u>HOW TO JOIN TUTORIAL</u></a> 🧑‍💻</b>\n\n"
+        f"<b>🖼 Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\"><u>@aenzBot</u></a>.\n\n"
+        f"<b>⚠️ JOIN BACKUP ⚡️</b> <a href=\"{CANVA_PROOF_URL}\"><u>{CANVA_PROOF_URL}</u></a>"
     )
     try:
         await context.bot.send_photo(

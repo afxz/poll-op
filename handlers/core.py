@@ -45,7 +45,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("📈 Stats", callback_data="nav_stats")
         ],
         [
-            InlineKeyboardButton("� Canva", callback_data="nav_canva")
+            InlineKeyboardButton("🌊 Canva", callback_data="nav_canva")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -114,7 +114,7 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     elif data == "nav_canva":
         msg = (
-            "<b>� Canva Feature</b>\n\n"
+            "<b>🌊 Canva Feature</b>\n\n"
             "• <b>/canvadroplink &lt;canva-invite-link&gt; [custom-alias]</b> — Shorten a Canva invite link and post to the Canva channel.\n\n"
             "<b>How it works:</b>\n"
             "1. Use the command with a Canva invite link.\n"
@@ -125,10 +125,7 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Go Back", callback_data="nav_home")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        current_msg = getattr(query.message, 'text', None)
-        current_markup = getattr(query.message, 'reply_markup', None)
-        if current_msg != msg or current_markup != reply_markup:
-            await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+        await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
         await query.answer()
         return
     else:
@@ -141,8 +138,5 @@ async def nav_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🌊 Canva", callback_data="nav_canva")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        current_msg = getattr(query.message, 'text', None)
-        current_markup = getattr(query.message, 'reply_markup', None)
-        if current_msg != msg or current_markup != reply_markup:
-            await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
+        await query.edit_message_text(msg, parse_mode="HTML", disable_web_page_preview=True, reply_markup=reply_markup)
         await query.answer()
