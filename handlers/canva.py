@@ -28,16 +28,26 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
         if msg_obj:
             await msg_obj.reply_text(f"Droplink API error: {e}")
         return
+
+    # Validate CANVA_CHANNEL_ID
+    try:
+        channel_id = int(CANVA_CHANNEL_ID)
+    except Exception:
+        if msg_obj:
+            await msg_obj.reply_text("Invalid CANVA_CHANNEL_ID. Please check your .env and use the numeric channel ID (e.g., -1001234567890). Channel URLs are not supported.")
+        return
     post_text = (
-        "NEW CANVA LINK ❤️✅\n"
-        f"{short_url}\n{short_url}\n\n"
-        f"📷 HOW TO JOIN TUTORIAL ({CANVA_TUTORIAL_URL}) 🧑‍💻\n\n"
-        f"({CANVA_PROOF_URL})🖼 Proof: After joining, send a screenshot to @aenzBot.\n\n"
-        f"⚠️ JOIN BACKUP ⚡️ ({CANVA_PROOF_URL})"
+        "<b>NEW CANVA LINK ❤️✅</b>\n"
+        f"<a href=\"{short_url}\">{short_url}</a>\n"
+        f"<a href=\"{short_url}\">{short_url}</a>\n"
+        f"<a href=\"{short_url}\">{short_url}</a>\n\n"
+        f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\">HOW TO JOIN TUTORIAL</a> 🧑‍💻</b>\n\n"
+        f"🖼 <b>Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a>.\n\n"
+        f"<b>⚠️ JOIN BACKUP ⚡️</b>"
     )
     try:
         await context.bot.send_photo(
-            chat_id=int(CANVA_CHANNEL_ID),
+            chat_id=channel_id,
             photo=CANVA_PREVIEW_IMAGE,
             caption=post_text,
             parse_mode="HTML"
@@ -45,5 +55,25 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
         if msg_obj:
             await msg_obj.reply_text("Posted to channel successfully!")
     except Exception as e:
-        if msg_obj:
-            await msg_obj.reply_text(f"Failed to post to channel: {e}")
+        # Provide more helpful error messages for common Telegram errors
+        error_text = str(e)
+        if "chat not found" in error_text.lower():
+            help_msg = (
+                "Failed to post to channel: Chat not found.\n"
+                "- Make sure the bot is an admin in the channel.\n"
+                "- Double-check the CANVA_CHANNEL_ID in your .env (must be a numeric ID, not a URL).\n"
+                "- For private channels, the bot must be added as a member/admin.\n"
+                "- After changes, restart the bot."
+            )
+            if msg_obj:
+                await msg_obj.reply_text(help_msg)
+        elif "not enough rights" in error_text.lower() or "have no rights" in error_text.lower():
+            help_msg = (
+                "Failed to post to channel: Bot does not have permission.\n"
+                "- Make sure the bot is an admin in the channel with permission to post and send media."
+            )
+            if msg_obj:
+                await msg_obj.reply_text(help_msg)
+        else:
+            if msg_obj:
+                await msg_obj.reply_text(f"Failed to post to channel: {e}")
