@@ -1,7 +1,11 @@
+
 import threading
 import time
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Koyeb will keep the app alive if it receives regular HTTP requests
 # Set this to your deployed Koyeb app's public URL
