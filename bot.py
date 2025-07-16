@@ -15,6 +15,12 @@ logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(mess
 logger = logging.getLogger(__name__)
 
 def main():
+    # Start keepalive thread for Koyeb free plan
+    try:
+        from keepalive import start_keepalive
+        start_keepalive()
+    except Exception:
+        pass
     if not TELEGRAM_TOKEN:
         logger.error("TELEGRAM_TOKEN is not set in .env!")
         return
@@ -41,6 +47,15 @@ def main():
 
     # Canva auto-link handler (must be before ignore_nonadmin)
     from handlers.canva import canva_link_auto_handler, canva_vote_callback
+    from handlers.canva_channel_auto import canva_channel_auto_handler
+    from config import CANVA_CHANNEL_ID
+    # Handler for Canva links in the Canva channel (delete and repost)
+    canva_channel_id_int = int(CANVA_CHANNEL_ID)
+    app.add_handler(MessageHandler(
+        filters.Chat(canva_channel_id_int) & filters.TEXT & filters.Regex(r"^https://www\.canva\.com/"),
+        canva_channel_auto_handler
+    ))
+    # Handler for Canva links in other chats (old behavior)
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^https://www\.canva\.com/"), canva_link_auto_handler))
 
     # Voting callback handler for canva posts

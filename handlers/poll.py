@@ -69,9 +69,9 @@ async def emotion_poll_command(update: Update, context: ContextTypes.DEFAULT_TYP
     today = datetime.now(IST).date()
     day_num = (today - CHALLENGE_START_DATE.date()).days + 1
     date_str = today.strftime('%d/%m/%Y')
+    lms_stats = f"LMS Day {day_num} ({date_str})"
     question = (
-        f"🧠 Emotional State Check — How are you feeling right now?\n"
-        f"LMS Day {day_num if day_num > 0 else 0} ({date_str})"
+        f"🧠 Emotional State Check — How are you feeling right now?\n{lms_stats}\nWin today. Repeat tomorrow."
     )
     options = EMOTIONAL_STATE_OPTIONS.copy()
     random.shuffle(options)
