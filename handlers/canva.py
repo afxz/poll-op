@@ -28,10 +28,8 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception:
         pass
     if vote_type == "notworking":
-        await query.answer(
-            "Stay joined in this channel, we will post a new fresh link soon! Only try the latest post link.\n\nLinks stop working because all seats are probably filled already, so don't worry, we will post a new link soon.\n\nAdmin has been notified about this issue.\n\nHowever, if you want paid plans, message @aenzk right now.",
-            show_alert=True
-        )
+        # This should not be triggered anymore, as the button is now a link, but keep for safety
+        await query.answer("Please use the new link provided.", show_alert=True)
     else:
         await query.answer("Vote recorded!", show_alert=False)
 
@@ -165,7 +163,7 @@ def build_vote_markup(msg_id):
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(f"✅ Working ({w})", callback_data=f"canva_vote:{msg_id}:working"),
-            InlineKeyboardButton(f"❌ Not working ({n})", callback_data=f"canva_vote:{msg_id}:notworking")
+            InlineKeyboardButton(f"❌ Not working ({n})", url="https://t.me/CanvaProInviteLinks/583")
         ],
         [InlineKeyboardButton("⚠️ JOIN BACKUP ⚡️", url=CANVA_PROOF_URL)]
     ])
