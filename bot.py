@@ -1,7 +1,7 @@
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from config import TELEGRAM_TOKEN
-from handlers.core import start, nav_callback
+from handlers.core import start
 from handlers.poll import poll_command, emotion_poll_command, set_lms_poll_time, set_emotion_poll_time
 from handlers.canva import canva_droplink_command, droplink_command
 from handlers.motivation import testmotivation_command
@@ -30,9 +30,15 @@ def main():
     app.add_handler(CommandHandler("setemotionpolltime", set_emotion_poll_time))
     app.add_handler(CommandHandler("canvadroplink", canva_droplink_command))
     app.add_handler(CommandHandler("droplink", droplink_command))
-    app.add_handler(CallbackQueryHandler(nav_callback, pattern="^nav_"))
+    # Navigation commands
+    from handlers.core import polls_nav, emotion_nav, motivation_nav, stats_nav, canva_nav
+    app.add_handler(CommandHandler("polls", polls_nav))
+    app.add_handler(CommandHandler("emotionnav", emotion_nav))
+    app.add_handler(CommandHandler("motivationnav", motivation_nav))
+    app.add_handler(CommandHandler("statsnav", stats_nav))
+    app.add_handler(CommandHandler("canvanav", canva_nav))
 
-    # MessageHandler must be last so it doesn't block CallbackQueryHandler
+    # MessageHandler must be last so it doesn't block other handlers
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))
     logger.warning("LMS Bot started.")
     app.run_polling()
