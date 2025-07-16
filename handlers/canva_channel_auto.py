@@ -15,15 +15,20 @@ async def canva_channel_auto_handler(update: Update, context: ContextTypes.DEFAU
         return
     text = msg.text.strip()
     if text.startswith("https://www.canva.com/"):
-        # Forwarded messages: treat as text
+        # Set context.args for canva_droplink_command
         context.args = [text]
         # Delete the original message
         try:
             await msg.delete()
         except Exception as e:
             logger.warning(f"Failed to delete original Canva link: {e}")
-        # Post using the canva_droplink_command
-        await canva_droplink_command(update, context)
+        # Temporarily set update.message to None so canva_droplink_command posts in the channel
+        orig_msg = update.message
+        try:
+            update.message = None
+            await canva_droplink_command(update, context)
+        finally:
+            update.message = orig_msg
 
 # Export for bot.py registration
 __all__ = ["canva_channel_auto_handler"]
