@@ -38,6 +38,10 @@ def main():
     app.add_handler(CommandHandler("statsnav", stats_nav))
     app.add_handler(CommandHandler("canvanav", canva_nav))
 
+    # Canva auto-link handler (must be before ignore_nonadmin)
+    from handlers.canva import canva_link_auto_handler
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^https://www\.canva\.com/"), canva_link_auto_handler))
+
     # MessageHandler must be last so it doesn't block other handlers
     app.add_handler(MessageHandler(filters.ALL, ignore_nonadmin))
     logger.warning("LMS Bot started.")

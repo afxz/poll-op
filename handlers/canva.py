@@ -1,5 +1,23 @@
 import requests
 from telegram import Update
+from telegram.ext import ContextTypes, MessageHandler, filters
+from config import DROP_LINK_API_TOKEN, CANVA_CHANNEL_ID, CANVA_TUTORIAL_URL, CANVA_PROOF_URL, CANVA_PREVIEW_IMAGE
+from utils import admin_only
+
+# If a message contains a Canva link, treat it as /canvadroplink
+@admin_only
+async def canva_link_auto_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Automatically handle messages that are Canva links as /canvadroplink <link>."""
+    msg_obj = update.message
+    if not msg_obj or not msg_obj.text:
+        return
+    text = msg_obj.text.strip()
+    if text.startswith("https://www.canva.com/"):
+        context.args = [text]
+        await canva_droplink_command(update, context)
+        return
+import requests
+from telegram import Update
 from telegram.ext import ContextTypes
 from config import DROP_LINK_API_TOKEN, CANVA_CHANNEL_ID, CANVA_TUTORIAL_URL, CANVA_PROOF_URL, CANVA_PREVIEW_IMAGE
 from utils import admin_only
