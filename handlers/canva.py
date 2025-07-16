@@ -256,8 +256,11 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
     # Schedule fake votes
     asyncio.create_task(schedule_fake_votes(context.bot, channel_id, sent.message_id))
     cleanup_old_votes()
+    # Delete the user's command message after posting
     if msg_obj:
-        await msg_obj.reply_text("Posted to channel successfully!")
-    # (removed unreachable/undefined code)
+        try:
+            await msg_obj.delete()
+        except Exception:
+            pass
 
 ## (Removed duplicate function definitions and unreachable code at the end of the file)
