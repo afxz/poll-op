@@ -27,7 +27,13 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
     except Exception:
         pass
-    await query.answer("Vote recorded!", show_alert=False)
+    if vote_type == "notworking":
+        await query.answer(
+            "Stay joined in this channel, we will post a new fresh link soon! Only try the latest post link.\n\nLinks stop working because all seats are probably filled already, so don't worry, we will post a new link soon.\n\nAdmin has been notified about this issue.\n\nHowever, if you want paid plans, message @aenzk right now.",
+            show_alert=True
+        )
+    else:
+        await query.answer("Vote recorded!", show_alert=False)
 
 import requests
 import os
