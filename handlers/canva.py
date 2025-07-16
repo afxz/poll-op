@@ -1,3 +1,33 @@
+# Voting callback handler for canva posts
+from telegram import Update
+from telegram.ext import ContextTypes
+
+async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    if not query or not query.data:
+        return
+    data = query.data.split(":")
+    if len(data) != 3:
+        await query.answer("Invalid vote.", show_alert=True)
+        return
+    _, msg_id, vote_type = data
+    user_id = query.from_user.id
+    if not can_vote(msg_id):
+        await query.answer("Voting closed for this post.", show_alert=True)
+        return
+    if user_has_voted(msg_id, user_id):
+        await query.answer("You already voted!", show_alert=True)
+        return
+    if vote_type not in ("working", "notworking"):
+        await query.answer("Invalid vote type.", show_alert=True)
+        return
+    add_vote(msg_id, user_id, vote_type)
+    # Update the button markup
+    try:
+        await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
+    except Exception:
+        pass
+    await query.answer("Vote recorded!", show_alert=False)
 
 import requests
 import os
