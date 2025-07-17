@@ -1,18 +1,17 @@
+
+# Telegram bot handler using python-telegram-bot v20+ that processes voice messages.
+# Uses Hugging Face's hosted Whisper model for transcription instead of local Whisper install.
 import os
-import subprocess
-import logging
+import requests
 from telegram import Update
 from telegram.ext import ContextTypes
 from utils import admin_only
-
-logger = logging.getLogger(__name__)
+from config import ADMIN_ID, HF_TOKEN
 
 async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
     user_id = msg.from_user.id if msg and msg.from_user else None
-    from config import ADMIN_ID
-    admin_id = ADMIN_ID
-    if user_id != admin_id:
+    if user_id != ADMIN_ID:
         if msg:
             await msg.reply_text("Sorry, only the bot admin can use this feature.")
         return
@@ -38,65 +37,42 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if msg:
             await msg.reply_text("Could not get file ID from voice message.")
         return
-    file = await context.bot.get_file(file_id)
-    ogg_path = f"voice_{file_id}.ogg"
-    wav_path = f"voice_{file_id}.wav"
+    ogg_path = "voice.ogg"
     try:
+        file = await context.bot.get_file(file_id)
         await file.download_to_drive(ogg_path)
     except Exception as e:
         if msg:
             await msg.reply_text(f"Failed to download voice file: {e}")
         return
-    # Check ffmpeg
-    try:
-        import subprocess
-        subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        await msg.reply_text("ffmpeg is not installed or not in PATH. Please install ffmpeg to use this feature.")
-        os.remove(ogg_path)
+    if not HF_TOKEN:
+        await msg.reply_text("Hugging Face API token (HF_TOKEN) is not set in the environment.")
+        try:
+            os.remove(ogg_path)
+        except Exception:
+            pass
         return
-    # Convert ogg to wav
+    api_url = "https://api-inference.huggingface.co/models/openai/whisper-tiny"
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     try:
-        import subprocess
-        subprocess.run(["ffmpeg", "-y", "-i", ogg_path, wav_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception as e:
-        await msg.reply_text(f"Failed to convert audio: {e}")
-        os.remove(ogg_path)
-        return
-    # Transcribe with whisper-tiny, install if needed
-    try:
-        import importlib.util
-        import subprocess
-        import sys
-        # Install whisper if not present
-        if importlib.util.find_spec("whisper") is None:
-            subprocess.run([sys.executable, "-m", "pip", "install", "openai-whisper"], check=True)
-        import whisper
-        # Install ffmpeg-python if not present (for dependency completeness)
-        if importlib.util.find_spec("ffmpeg") is None:
-            subprocess.run([sys.executable, "-m", "pip", "install", "ffmpeg-python"], check=True)
-        model = whisper.load_model("tiny")
-        result = model.transcribe(wav_path)
-        text_raw = result.get('text', '')
-        if isinstance(text_raw, list):
-            text = ' '.join(str(x) for x in text_raw).strip()
+        with open(ogg_path, "rb") as f:
+            response = requests.post(api_url, headers=headers, data=f, timeout=60)
+        if response.status_code == 503:
+            await msg.reply_text("Model is loading on Hugging Face. Please try again in a few seconds.")
+        elif response.status_code != 200:
+            await msg.reply_text(f"Transcription failed: {response.status_code} {response.text}")
         else:
-            text = str(text_raw).strip()
-        if msg:
+            result = response.json()
+            text = result.get("text", "").strip()
             if not text:
                 await msg.reply_text("No speech detected or transcription failed.")
             else:
                 await msg.reply_text(f"📝 Transcription:\n{text}")
     except Exception as e:
-        if msg:
-            await msg.reply_text(f"Transcription failed: {e}")
+        await msg.reply_text(f"Transcription failed: {e}")
     finally:
         try:
             os.remove(ogg_path)
-        except Exception:
-            pass
-        try:
-            os.remove(wav_path)
         except Exception:
             pass
 

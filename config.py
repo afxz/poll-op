@@ -1,4 +1,6 @@
 import os
+HF_TOKEN = os.getenv('HF_TOKEN', '')
+import os
 from datetime import datetime, time
 from dotenv import load_dotenv
 
