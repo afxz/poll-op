@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
     user_id = msg.from_user.id if msg and msg.from_user else None
-    admin_id = int(os.getenv('ADMIN_ID', '7068007001'))
+    from config import ADMIN_ID
+    admin_id = ADMIN_ID
     if user_id != admin_id:
         if msg:
             await msg.reply_text("Sorry, only the bot admin can use this feature.")
