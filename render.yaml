@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: lms-telegram-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROUP_CHAT_ID
+        sync: false
+      - key: ADMIN_ID
+        sync: false
+      - key: CHALLENGE_START_DATE
+        sync: false
+      - key: CHALLENGE_DAYS
+        sync: false
+      - key: LMS_POLL_TIME
+        sync: false
+      - key: EMOTION_POLL_TIME
+        sync: false
+      - key: DROP_LINK_API_TOKEN
+        sync: false
+      - key: CANVA_CHANNEL_ID
+        sync: false
+      - key: CANVA_TUTORIAL_URL
+        sync: false
+      - key: CANVA_PROOF_URL
+        sync: false
+      - key: CANVA_PREVIEW_IMAGE
+        sync: false
+      - key: KEEPALIVE_URL
+        sync: false
