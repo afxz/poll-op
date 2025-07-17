@@ -15,9 +15,15 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if msg:
             await msg.reply_text("Sorry, only the bot admin can use this feature.")
         return
-    if not msg or not getattr(msg, 'reply_to_message', None) or not getattr(msg.reply_to_message, 'voice', None):
+    if not msg or not getattr(msg, 'reply_to_message', None):
         if msg:
             await msg.reply_text("Reply to a voice message with /transcribe to use speech-to-text.")
+        return
+    reply_msg = getattr(msg, 'reply_to_message', None)
+    voice = getattr(reply_msg, 'voice', None)
+    if not voice:
+        if msg:
+            await msg.reply_text("No voice message found to transcribe. Please reply directly to a voice message.")
         return
     # Clean up any leftover .ogg files
     for f in os.listdir('.'):
@@ -26,12 +32,6 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 os.remove(f)
             except Exception:
                 pass
-    reply_msg = getattr(msg, 'reply_to_message', None)
-    voice = getattr(reply_msg, 'voice', None)
-    if not voice:
-        if msg:
-            await msg.reply_text("No voice message found to transcribe.")
-        return
     file_id = getattr(voice, 'file_id', None)
     if not file_id:
         if msg:
@@ -41,6 +41,9 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         file = await context.bot.get_file(file_id)
         await file.download_to_drive(ogg_path)
+        if not os.path.exists(ogg_path) or os.path.getsize(ogg_path) == 0:
+            await msg.reply_text("Failed to download the voice file. Please try again.")
+            return
     except Exception as e:
         if msg:
             await msg.reply_text(f"Failed to download voice file: {e}")
@@ -52,22 +55,27 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
         return
-    api_url = "https://api-inference.huggingface.co/models/openai/whisper-tiny"
+    api_url = "https://api-inference.huggingface.co/models/openai/whisper-tiny.en"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     try:
         with open(ogg_path, "rb") as f:
             response = requests.post(api_url, headers=headers, data=f, timeout=60)
         if response.status_code == 503:
             await msg.reply_text("Model is loading on Hugging Face. Please try again in a few seconds.")
+        elif response.status_code == 404:
+            await msg.reply_text("Model not found on Hugging Face. Please check the model name or try again later.")
         elif response.status_code != 200:
             await msg.reply_text(f"Transcription failed: {response.status_code} {response.text}")
         else:
-            result = response.json()
-            text = result.get("text", "").strip()
-            if not text:
-                await msg.reply_text("No speech detected or transcription failed.")
-            else:
-                await msg.reply_text(f"📝 Transcription:\n{text}")
+            try:
+                result = response.json()
+                text = result.get("text", "").strip()
+                if not text:
+                    await msg.reply_text("No speech detected or transcription failed.")
+                else:
+                    await msg.reply_text(f"📝 Transcription:\n{text}")
+            except Exception:
+                await msg.reply_text("Transcription failed: Could not parse response from Hugging Face API.")
     except Exception as e:
         await msg.reply_text(f"Transcription failed: {e}")
     finally:
