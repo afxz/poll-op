@@ -2,7 +2,7 @@ import logging
 import pytz
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from config import ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, POLL_OPTIONS, EMOTIONAL_STATE_OPTIONS
+from config import ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, POLL_OPTIONS, EMOTIONAL_STATE_OPTIONS, LMS_POLL_TIME, EMOTION_POLL_TIME
 from motivation_service import get_motivation
 from utils import admin_only
 from datetime import datetime, timedelta
@@ -25,16 +25,15 @@ def get_start_message():
         f"• <b>End Date:</b> {challenge_end}\n"
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
         f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
-        f"<b>Auto Posting Times (IST):</b>\n• Poll: {LMS_POLL_TIME} (LMS)\n• Poll: {EMOTION_POLL_TIME} (Emotional State)\n• Motivation: {motivation_times}\n\n"
+        f"<b>Auto Posting Times (IST):</b>\n• LMS Poll: {LMS_POLL_TIME}\n• Emotional Poll: {EMOTION_POLL_TIME}\n• Motivation: {motivation_times}\n\n"
         "<b>Key Features & Navigation:</b>\n"
         "• <b>/polls</b> — LMS poll commands and info.\n"
         "• <b>/motivationnav</b> — Motivation info.\n"
         "• <b>/emotionnav</b> — Emotional state poll info.\n"
         "• <b>/statsnav</b> — LMS stats and info.\n"
         "• <b>/canvanav</b> — Canva & Droplink features.\n"
-        "• <b>/canvadroplink</b> — Shorten a Canva invite link and post to the Canva channel.\n"
-        "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n"
-        "<i>All commands are admin-only.</i>"
+        "• <b>/transcribe</b> — Voice-to-text (admin only, reply to voice).\n"
+        "<i>All commands are admin-only unless stated.</i>"
     )
 
 @admin_only
@@ -51,14 +50,15 @@ async def polls_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
     from config import LMS_POLL_TIME, EMOTION_POLL_TIME
     msg = (
         "<b>📊 Polls</b>\n\n"
-        "• <b>/poll</b> — Send a test poll to the group.\n"
-        "• <b>/testpoll</b> — Test poll in your DM.\n"
+        "• <b>/poll</b> — Send a daily LMS poll to the group.\n"
+        "• <b>/testpoll</b> — Test poll in the group (admin only).\n"
         "• <b>/emotionpoll</b> — Emotional state check poll.\n\n"
         f"<b>Poll Times (IST):</b> LMS: {LMS_POLL_TIME}, Emotional: {EMOTION_POLL_TIME}\n"
         "<b>Poll Options:</b>\n"
         + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
         "\n\n<b>Other:</b>\n• <b>/canvadroplink</b> — Shorten a Canva invite link and post to the Canva channel.\n"
-        "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink."
+        "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n"
+        "• <b>/transcribe</b> — Voice-to-text (admin only, reply to voice)."
     )
     msg_obj = update.message
     if msg_obj is not None:
@@ -101,10 +101,12 @@ async def stats_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
         f"<b>End Date:</b> {challenge_end}\n"
         f"<b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
-        f"<b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
+        f"<b>Days Left:</b> {days_left if days_left > 0 else 0}\n"
+        f"<b>Poll Times (IST):</b> LMS: {LMS_POLL_TIME}, Emotional: {EMOTION_POLL_TIME}\n"
         f"<b>Group ID:</b> <code>{GROUP_CHAT_ID}</code>\n"
         f"<b>Admin ID:</b> <code>{ADMIN_ID}</code>\n"
-        "<i>All times are in Indian Standard Time (IST).</i>"
+        "<i>All times are in Indian Standard Time (IST).\n"
+        "Use /transcribe for voice-to-text (admin only, reply to voice).</i>"
     )
     msg_obj = update.message
     if msg_obj is not None:

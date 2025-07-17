@@ -1,4 +1,7 @@
 python-telegram-bot[job-queue]>=20.0
 requests
 python-dotenv
+pyttsx3
+openai-whisper
+ffmpeg-python
 pytz

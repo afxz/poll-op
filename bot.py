@@ -36,6 +36,9 @@ def main():
     app.add_handler(CommandHandler("setemotionpolltime", set_emotion_poll_time))
     app.add_handler(CommandHandler("canvadroplink", canva_droplink_command))
     app.add_handler(CommandHandler("droplink", droplink_command))
+    # Voice-to-text admin-only handler
+    from handlers.voice_transcribe import transcribe_voice
+    app.add_handler(CommandHandler("transcribe", transcribe_voice))
     # Navigation commands
     from handlers.core import polls_nav, emotion_nav, motivation_nav, stats_nav, canva_nav
     app.add_handler(CommandHandler("polls", polls_nav))

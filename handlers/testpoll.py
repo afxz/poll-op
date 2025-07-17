@@ -36,13 +36,19 @@ async def testpoll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             allows_multiple_answers=False
         )
         # Pin the poll
-        await context.bot.pin_chat_message(chat_id=int(GROUP_CHAT_ID), message_id=poll_msg.message_id, disable_notification=True)
+        try:
+            await context.bot.pin_chat_message(chat_id=int(GROUP_CHAT_ID), message_id=poll_msg.message_id, disable_notification=True)
+        except Exception:
+            pass
         # Encourage users to participate
-        await context.bot.send_message(
-            chat_id=int(GROUP_CHAT_ID),
-            text="Let's see everyone's progress! Take a second to vote and stay accountable. 💪\nYour participation motivates others!",
-            reply_to_message_id=poll_msg.message_id
-        )
+        try:
+            await context.bot.send_message(
+                chat_id=int(GROUP_CHAT_ID),
+                text="Let's see everyone's progress! Take a second to vote and stay accountable. 💪\nYour participation motivates others!",
+                reply_to_message_id=poll_msg.message_id
+            )
+        except Exception:
+            pass
         if msg_obj:
             await msg_obj.reply_text("✅ Test poll sent, pinned, and encouragement posted in the group.")
     except Exception as e:
