@@ -49,6 +49,7 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     # Check ffmpeg
     try:
+        import subprocess
         subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         await msg.reply_text("ffmpeg is not installed or not in PATH. Please install ffmpeg to use this feature.")
@@ -56,15 +57,24 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     # Convert ogg to wav
     try:
+        import subprocess
         subprocess.run(["ffmpeg", "-y", "-i", ogg_path, wav_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as e:
         await msg.reply_text(f"Failed to convert audio: {e}")
         os.remove(ogg_path)
         return
-    # Transcribe with whisper-tiny
+    # Transcribe with whisper-tiny, install if needed
     try:
-        # Requires: pip install openai-whisper
+        import importlib.util
+        import subprocess
+        import sys
+        # Install whisper if not present
+        if importlib.util.find_spec("whisper") is None:
+            subprocess.run([sys.executable, "-m", "pip", "install", "openai-whisper"], check=True)
         import whisper
+        # Install ffmpeg-python if not present (for dependency completeness)
+        if importlib.util.find_spec("ffmpeg") is None:
+            subprocess.run([sys.executable, "-m", "pip", "install", "ffmpeg-python"], check=True)
         model = whisper.load_model("tiny")
         result = model.transcribe(wav_path)
         text_raw = result.get('text', '')
