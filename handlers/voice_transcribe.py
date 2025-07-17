@@ -55,7 +55,7 @@ async def transcribe_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
         return
-    api_url = "https://api-inference.huggingface.co/models/openai/whisper-tiny.en"
+    api_url = "https://api-inference.huggingface.co/models/openai/whisper-tiny"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     try:
         with open(ogg_path, "rb") as f:
