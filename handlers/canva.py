@@ -26,7 +26,7 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:
         await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
     except Exception:
-    long_url = context.args[0] if context.args else ""
+        pass
     if vote_type == "notworking":
         # This should not be triggered anymore, as the button is now a link, but keep for safety
         await query.answer("Please use the new link provided.", show_alert=True)
@@ -105,10 +105,6 @@ def load_votes():
     return {}
 
 def save_votes(data):
-    if text.startswith("https://www.canva.com/brand/join") or (update.message and update.message.text and update.message.text.startswith("/not ")):
-        canva_url = text if text.startswith("https://www.canva.com/brand/join") else text.split(" ", 1)[1]
-    else:
-        # ...existing code for droplink...
     path = get_votes_storage()
     try:
         with open(path, 'w') as f:
