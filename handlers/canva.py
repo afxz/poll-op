@@ -26,7 +26,7 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:
         await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
     except Exception:
-        pass
+    long_url = context.args[0] if context.args else ""
     if vote_type == "notworking":
         # This should not be triggered anymore, as the button is now a link, but keep for safety
         await query.answer("Please use the new link provided.", show_alert=True)
@@ -105,6 +105,10 @@ def load_votes():
     return {}
 
 def save_votes(data):
+    if text.startswith("https://www.canva.com/brand/join") or (update.message and update.message.text and update.message.text.startswith("/not ")):
+        canva_url = text if text.startswith("https://www.canva.com/brand/join") else text.split(" ", 1)[1]
+    else:
+        # ...existing code for droplink...
     path = get_votes_storage()
     try:
         with open(path, 'w') as f:
@@ -185,23 +189,34 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
         if msg_obj:
             await msg_obj.reply_text("Usage: /canvadroplink <canva-invite-link> [custom-alias]")
         return
-    long_url = context.args[0]
-    alias = context.args[1] if len(context.args) > 1 else ""
-    api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={long_url}"
-    if alias:
-        api_url += f"&alias={alias}"
-    api_url += "&format=text"
-    try:
-        resp = requests.get(api_url, timeout=10)
-        short_url = resp.text.strip()
-        if not short_url or not short_url.startswith("http"):
+    # If /not or brand/join link, use directly; else, use droplink
+    use_direct = False
+    canva_url = context.args[0] if context.args else ""
+    if (msg_obj and msg_obj.text and msg_obj.text.startswith("/not ")):
+        # /not <canva-link>
+        canva_url = msg_obj.text.split(" ", 1)[1].strip()
+        use_direct = True
+    elif canva_url.startswith("https://www.canva.com/brand/join"):
+        use_direct = True
+
+    if not use_direct:
+        alias = context.args[1] if len(context.args) > 1 else ""
+        api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={canva_url}"
+        if alias:
+            api_url += f"&alias={alias}"
+        api_url += "&format=text"
+        try:
+            resp = requests.get(api_url, timeout=10)
+            short_url = resp.text.strip()
+            if not short_url or not short_url.startswith("http"):
+                if msg_obj:
+                    await msg_obj.reply_text("Failed to shorten link. Droplink API error.")
+                return
+            canva_url = short_url
+        except Exception as e:
             if msg_obj:
-                await msg_obj.reply_text("Failed to shorten link. Droplink API error.")
+                await msg_obj.reply_text(f"Droplink API error: {e}")
             return
-    except Exception as e:
-        if msg_obj:
-            await msg_obj.reply_text(f"Droplink API error: {e}")
-        return
 
     # Validate CANVA_CHANNEL_ID
     try:
@@ -213,7 +228,7 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
 
     post_text = (
         "<b>NEW CANVA LINK ❤️✅</b>\n"
-        f"<b><u>{short_url}</u></b>\n<b><u>{short_url}</u></b>\n\n"
+        f"<b><u>{canva_url}</u></b>\n<b><u>{canva_url}</u></b>\n\n"
         f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\">HOW TO JOIN TUTORIAL</a> 🧑‍💻</b>\n\n"
         f"<b>🖼 Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a>.\n"
     )

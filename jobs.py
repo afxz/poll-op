@@ -1,5 +1,5 @@
 from datetime import time, datetime, timedelta
-from config import MOTIVATION_TIMES, LMS_POLL_TIME, EMOTION_POLL_TIME
+from config import MOTIVATION_TIMES, LMS_POLL_TIME
 from handlers import send_daily_poll, send_motivation
 import pytz
 import random
@@ -14,12 +14,6 @@ async def schedule_jobs(app):
     poll_time_utc = (datetime.combine(datetime.now(IST).date(), poll_time_ist) - timedelta(hours=5, minutes=30)).time()
     app.job_queue.run_daily(send_daily_poll, poll_time_utc)
 
-    # Schedule emotional state poll at EMOTION_POLL_TIME (IST, format 'HH:MM')
-    from handlers import emotion_poll_command
-    emo_hour, emo_minute = map(int, EMOTION_POLL_TIME.split(":"))
-    emotion_time_ist = time(emo_hour, emo_minute)
-    emotion_time_utc = (datetime.combine(datetime.now(IST).date(), emotion_time_ist) - timedelta(hours=5, minutes=30)).time()
-    app.job_queue.run_daily(emotion_poll_command, emotion_time_utc)
 
     # Schedule motivational messages at 5:00 AM, 12:00 PM, and 8:00 PM IST
     for t in MOTIVATION_TIMES:

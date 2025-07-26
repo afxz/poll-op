@@ -2,7 +2,7 @@ import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from config import TELEGRAM_TOKEN
 from handlers.core import start
-from handlers.poll import poll_command, emotion_poll_command, set_lms_poll_time, set_emotion_poll_time
+from handlers.poll import poll_command, set_lms_poll_time
 from handlers.canva import canva_droplink_command, droplink_command
 from handlers.motivation import testmotivation_command
 from handlers.motivation import send_motivation
@@ -31,15 +31,12 @@ def main():
     app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(CommandHandler("testpoll", testpoll_command))
     app.add_handler(CommandHandler("testmotivation", testmotivation_command))
-    app.add_handler(CommandHandler("emotionpoll", emotion_poll_command))
     app.add_handler(CommandHandler("setlmspolltime", set_lms_poll_time))
-    app.add_handler(CommandHandler("setemotionpolltime", set_emotion_poll_time))
     app.add_handler(CommandHandler("canvadroplink", canva_droplink_command))
     app.add_handler(CommandHandler("droplink", droplink_command))
     # Navigation commands
-    from handlers.core import polls_nav, emotion_nav, motivation_nav, stats_nav, canva_nav
+    from handlers.core import polls_nav, motivation_nav, stats_nav, canva_nav
     app.add_handler(CommandHandler("polls", polls_nav))
-    app.add_handler(CommandHandler("emotionnav", emotion_nav))
     app.add_handler(CommandHandler("motivationnav", motivation_nav))
     app.add_handler(CommandHandler("statsnav", stats_nav))
     app.add_handler(CommandHandler("canvanav", canva_nav))
