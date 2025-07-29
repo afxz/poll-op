@@ -198,40 +198,47 @@ async def schedule_fake_votes(bot, chat_id, msg_id):
 @admin_only
 async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_obj = update.message
+
     if not context.args or len(context.args) < 1:
         if msg_obj:
             await msg_obj.reply_text("Usage: /canvadroplink <canva-invite-link> [custom-alias]")
         return
-    # If /not or brand/join link, use directly; else, use droplink if enabled
-    use_direct = False
+
     canva_url = context.args[0] if context.args else ""
+    alias = context.args[1] if len(context.args) > 1 else ""
+
+    # Only skip shortlinking for /not and /brand/join links
+    use_direct = False
     if (msg_obj and msg_obj.text and msg_obj.text.startswith("/not ")):
-        # /not <canva-link>
         canva_url = msg_obj.text.split(" ", 1)[1].strip()
         use_direct = True
     elif canva_url.startswith("https://www.canva.com/brand/join"):
         use_direct = True
 
-    # Only shortlink if toggle is enabled and not a direct link
     global canva_shortlink_enabled
-    if not use_direct and canva_shortlink_enabled:
-        alias = context.args[1] if len(context.args) > 1 else ""
-        api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={canva_url}"
-        if alias:
-            api_url += f"&alias={alias}"
-        api_url += "&format=text"
-        try:
-            resp = requests.get(api_url, timeout=10)
-            short_url = resp.text.strip()
-            if not short_url or not short_url.startswith("http"):
+    if not use_direct:
+        if canva_shortlink_enabled:
+            # Debug: log attempt to shortlink
+            print(f"[Canva] Shortlinking enabled, sending to Droplink: {canva_url}")
+            api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={canva_url}"
+            if alias:
+                api_url += f"&alias={alias}"
+            api_url += "&format=text"
+            try:
+                resp = requests.get(api_url, timeout=10)
+                short_url = resp.text.strip()
+                if not short_url or not short_url.startswith("http"):
+                    if msg_obj:
+                        await msg_obj.reply_text("Failed to shorten link. Droplink API error.")
+                    return
+                canva_url = short_url
+            except Exception as e:
                 if msg_obj:
-                    await msg_obj.reply_text("Failed to shorten link. Droplink API error.")
+                    await msg_obj.reply_text(f"Droplink API error: {e}")
                 return
-            canva_url = short_url
-        except Exception as e:
-            if msg_obj:
-                await msg_obj.reply_text(f"Droplink API error: {e}")
-            return
+        else:
+            # Debug: log that shortlinking is disabled
+            print(f"[Canva] Shortlinking disabled, posting original link: {canva_url}")
 
     # Validate CANVA_CHANNEL_ID
     try:
