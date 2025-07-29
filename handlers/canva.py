@@ -192,8 +192,9 @@ async def schedule_fake_votes(bot, chat_id, msg_id):
     try:
         markup = build_vote_markup(msg_id)
         await bot.edit_message_reply_markup(chat_id=chat_id, message_id=msg_id, reply_markup=markup)
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.warning(f"[FakeVotes] Could not update message {msg_id} in chat {chat_id}: {e}")
 
 @admin_only
 async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
