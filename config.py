@@ -1,11 +1,12 @@
 import os
-import os
+# Toggle for Canva shortlinking (default: True)
+CANVA_SHORTLINK_ENABLED = os.getenv('CANVA_SHORTLINK_ENABLED', 'true').lower() == 'true'
 from datetime import datetime, time
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DROP_LINK_API_TOKEN = os.getenv('DROP_LINK_API_TOKEN', '467b2c6bb71304bd3b84ac818703b578ec6439fe')
+DROP_LINK_API_TOKEN = os.getenv('DROP_LINK_API_TOKEN', '')
 CANVA_CHANNEL_ID = os.getenv('CANVA_CHANNEL_ID', '-1002134567890')  # Set your channel ID here
 CANVA_TUTORIAL_URL = os.getenv('CANVA_TUTORIAL_URL', 'https://t.me/CanvaProInviteLinks/881')
 CANVA_PROOF_URL = os.getenv('CANVA_PROOF_URL', 'https://t.me/+ejp2_sjBtJczY2I9')

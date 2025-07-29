@@ -30,8 +30,9 @@ def get_start_message():
         "• <b>/polls</b> — LMS poll commands and info.\n"
         "• <b>/motivationnav</b> — Motivation info.\n"
         "• <b>/statsnav</b> — LMS stats and info.\n"
-        "• <b>/canvanav</b> — Canva & Droplink features.\n"
-        "<i>All commands are admin-only unless stated.</i>"
+        # Canva & Droplink help merged into /polls and /start
+        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
+        "<i>All commands are admin-only unless stated. Canva shortlinking toggle resets on restart.</i>"
     )
 
 @admin_only
@@ -49,12 +50,15 @@ async def polls_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
         "<b>📊 Polls</b>\n\n"
         "• <b>/poll</b> — Send a daily LMS poll to the group.\n"
-        "• <b>/testpoll</b> — Test poll in the group (admin only).\n\n"
+        "• <b>/testpoll</b> — Test poll in the group (admin only).\n"
+        "• <b>/setlmspolltime</b> — Set LMS poll time (admin only).\n\n"
         f"<b>Poll Time (IST):</b> {LMS_POLL_TIME}\n"
         "<b>Poll Options:</b>\n"
         + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-        "\n\n<b>Other:</b>\n• <b>/canvadroplink</b> — Shorten a Canva invite link and post to the Canva channel.\n"
+        "\n\n<b>Other:</b>\n• <b>/canvadroplink &lt;canva-invite-link&gt; [custom-alias]</b> — Shorten a Canva invite link and post to the Canva channel. Respects the shortlink toggle.\n"
         "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n"
+        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
+        "\n<b>How it works:</b>\n1. Use the command with a Canva invite link or any URL.\n2. The bot will shorten the link using Droplink if enabled. For Canva, it posts to the designated Canva channel with a tutorial and proof. For any other link, it replies with the shortlink.\n3. Use /togglecanvashortlink to enable or disable shortlinking for Canva links.\n\n<i>Only admins can use these commands. Toggle resets on restart.</i>"
     )
     msg_obj = update.message
     if msg_obj is not None:
@@ -95,17 +99,3 @@ async def stats_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if msg_obj is not None:
         await msg_obj.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)
 
-@admin_only
-async def canva_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = (
-        "<b>🌊 Canva & Droplink Features</b>\n\n"
-        "• <b>/canvadroplink &lt;canva-invite-link&gt; [custom-alias]</b> — Shorten a Canva invite link and post to the Canva channel.\n"
-        "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n\n"
-        "<b>How it works:</b>\n"
-        "1. Use the command with a Canva invite link or any URL.\n"
-        "2. The bot will shorten the link using Droplink. For Canva, it posts to the designated Canva channel with a tutorial and proof. For any other link, it replies with the shortlink.\n\n"
-        "<i>Only admins can use these commands.</i>"
-    )
-    msg_obj = update.message
-    if msg_obj is not None:
-        await msg_obj.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)

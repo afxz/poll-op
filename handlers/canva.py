@@ -1,3 +1,19 @@
+# Add missing imports for Telegram types
+from telegram import Update
+from telegram.ext import ContextTypes
+from config import CANVA_SHORTLINK_ENABLED
+
+# Toggle state (in-memory, will reset on restart)
+canva_shortlink_enabled = CANVA_SHORTLINK_ENABLED
+
+# Command to toggle Canva shortlinking
+async def toggle_canva_shortlink_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global canva_shortlink_enabled
+    canva_shortlink_enabled = not canva_shortlink_enabled
+    state = 'enabled' if canva_shortlink_enabled else 'disabled'
+    msg_obj = update.message
+    if msg_obj:
+        await msg_obj.reply_text(f"Canva shortlinking is now <b>{state}</b>.", parse_mode="HTML")
 # Voting callback handler for canva posts
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -51,6 +67,7 @@ __all__ = [
     'canva_link_auto_handler',
     'build_vote_markup',
     'schedule_fake_votes',
+    'toggle_canva_shortlink_command',
 ]
 
 @admin_only
@@ -185,7 +202,7 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
         if msg_obj:
             await msg_obj.reply_text("Usage: /canvadroplink <canva-invite-link> [custom-alias]")
         return
-    # If /not or brand/join link, use directly; else, use droplink
+    # If /not or brand/join link, use directly; else, use droplink if enabled
     use_direct = False
     canva_url = context.args[0] if context.args else ""
     if (msg_obj and msg_obj.text and msg_obj.text.startswith("/not ")):
@@ -195,7 +212,9 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
     elif canva_url.startswith("https://www.canva.com/brand/join"):
         use_direct = True
 
-    if not use_direct:
+    # Only shortlink if toggle is enabled and not a direct link
+    global canva_shortlink_enabled
+    if not use_direct and canva_shortlink_enabled:
         alias = context.args[1] if len(context.args) > 1 else ""
         api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={canva_url}"
         if alias:

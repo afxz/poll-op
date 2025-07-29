@@ -35,11 +35,12 @@ def main():
     app.add_handler(CommandHandler("canvadroplink", canva_droplink_command))
     app.add_handler(CommandHandler("droplink", droplink_command))
     # Navigation commands
-    from handlers.core import polls_nav, motivation_nav, stats_nav, canva_nav
+    from handlers.core import polls_nav, motivation_nav, stats_nav
+    from handlers.canva import toggle_canva_shortlink_command
     app.add_handler(CommandHandler("polls", polls_nav))
     app.add_handler(CommandHandler("motivationnav", motivation_nav))
     app.add_handler(CommandHandler("statsnav", stats_nav))
-    app.add_handler(CommandHandler("canvanav", canva_nav))
+    app.add_handler(CommandHandler("togglecanvashortlink", toggle_canva_shortlink_command))
 
 
     # Canva auto-link handler (must be before ignore_nonadmin)
