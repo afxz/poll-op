@@ -30,7 +30,6 @@ def get_start_message():
         "• <b>/polls</b> — LMS poll commands and info.\n"
         "• <b>/motivationnav</b> — Motivation info.\n"
         "• <b>/statsnav</b> — LMS stats and info.\n"
-        # Canva & Droplink help merged into /polls and /start
         "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
         "<i>All commands are admin-only unless stated. Canva shortlinking toggle resets on restart.</i>"
     )
@@ -55,7 +54,7 @@ async def polls_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>Poll Time (IST):</b> {LMS_POLL_TIME}\n"
         "<b>Poll Options:</b>\n"
         + "\n".join([f"{i+1}. {opt}" for i, opt in enumerate(POLL_OPTIONS)]) +
-        "\n\n<b>Other:</b>\n• <b>/canvadroplink &lt;canva-invite-link&gt; [custom-alias]</b> — Shorten a Canva invite link and post to the Canva channel. Respects the shortlink toggle.\n"
+        "\n\n<b>Other:</b>\n"
         "• <b>/droplink &lt;url&gt;</b> — Instantly shorten any link using Droplink and get the shortlink.\n"
         "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
         "\n<b>How it works:</b>\n1. Use the command with a Canva invite link or any URL.\n2. The bot will shorten the link using Droplink if enabled. For Canva, it posts to the designated Canva channel with a tutorial and proof. For any other link, it replies with the shortlink.\n3. Use /togglecanvashortlink to enable or disable shortlinking for Canva links.\n\n<i>Only admins can use these commands. Toggle resets on restart.</i>"

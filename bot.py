@@ -32,7 +32,6 @@ def main():
     app.add_handler(CommandHandler("testpoll", testpoll_command))
     app.add_handler(CommandHandler("testmotivation", testmotivation_command))
     app.add_handler(CommandHandler("setlmspolltime", set_lms_poll_time))
-    app.add_handler(CommandHandler("canvadroplink", canva_droplink_command))
     app.add_handler(CommandHandler("droplink", droplink_command))
     # Navigation commands
     from handlers.core import polls_nav, motivation_nav, stats_nav
