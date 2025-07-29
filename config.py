@@ -20,16 +20,16 @@ ADMIN_ID = int(os.getenv('ADMIN_ID', '7068007001'))
 CHALLENGE_START_DATE = datetime.strptime(os.getenv('CHALLENGE_START_DATE', '2025-07-01'), '%Y-%m-%d')
 CHALLENGE_DAYS = int(os.getenv('CHALLENGE_DAYS', 150))
 POLL_OPTIONS = [
-    "✅ Strong & focused – No urges, full control, got things done 💪🧠",
-    "📈 On the grind – Productive flow, learning, creating, or moving forward 🚀",
-    "🏃‍♂️ Body in motion – Worked out, walked, or stayed physically active 🔋",
-    "🧘 Centered & calm – Meditated, journaled, or stayed mindful 🌱",
-    "🎧 Inspired – Had creative sparks or consumed meaningful content 🎨🎶",
-    "😤 Urges hit hard – But I resisted and stayed clean 🛡️",
-    "🌪️ Mentally chaotic – Overstimulated, anxious, or scattered but no relapse 😵‍💫",
-    "😔 Down & drained – Low energy or mood, but I didn’t give in 🌧️",
-    "☕ Neutral zone – Chill, not super productive, but stayed on track 📦",
-    "❌ Relapsed – Slipped today, but I’m resetting and not giving up 🔄"
+    "✅ Strong & clean – No urges, full control 💪",
+    "📈 Productive – Got stuff done, stayed focused 🧠",
+    "🏃‍♂️ Active – Exercised or moved, felt energetic 🔋",
+    "🎧 Creative – Learned, built, or made something 🎨",
+    "🧘 Mindful – Meditated, journaled, or calmed down 🌱",
+    "💪 Urges hit – Fought back, no relapse 🛡️",
+    "🌪️ Overstimmed – Mind raced, still held on 😵‍💫",
+    "☕ Low energy – Unproductive but stayed clean 🛋️",
+    "😔 Foggy/down – Mentally heavy, but didn’t fall 🌧️",
+    "❌ Relapsed – Slipped today" 
 ]
 
 MOTIVATION_TIMES = [
