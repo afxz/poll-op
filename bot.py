@@ -11,7 +11,7 @@ from handlers.testpoll import testpoll_command
 from jobs import schedule_jobs
 from handlers.ignore import ignore_nonadmin
 from handlers.elimination import get_elimination_voters_command, import_elimination_voters_handler, set_elimination_poll_id_command, elimination_poll_answer_handler, elimination_report_command, confirm_elimination_command, send_elimination_poll_command
-from handlers.poll import get_poll_id_command
+from handlers.elimination import get_poll_id_command
 
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(message)s')
 logger = logging.getLogger(__name__)
