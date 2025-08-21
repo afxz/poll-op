@@ -44,14 +44,16 @@ IST = pytz.timezone('Asia/Kolkata')
 def get_help_message():
     return (
         "<b>LMS Bot Help</b>\n\n"
-        "<b>Elimination Poll Management:</b>\n"
+    "<b>Elimination Poll Management:</b>\n"
         "• <b>/sendeliminationpoll</b> — Start a new elimination poll (non-voters will be removed after admin confirmation).\n"
         "• <b>/seteliminationpoll</b> — Reply to any poll message with this command to set it as the elimination poll (overwrites previous tracking).\n"
         "   (Advanced: /seteliminationpoll &lt;poll_id&gt; to set by ID.)\n"
         "• <b>/getpollid</b> — Reply to any poll message with this command to get its poll ID.\n"
         "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
         "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n"
-        "• <b>/geteliminationvoters</b> — Export elimination voters JSON.\n\n"
+    "• <b>/geteliminationvoters</b> — Export elimination voters JSON.\n"
+    "• <b>/importmembers</b> — Import group_members.json (from userbot export).\n"
+    "• <b>/exportmembers</b> — Export current group_members.json.\n\n"
         "<b>Polls & Motivation:</b>\n"
         "• <b>/poll</b> — Send daily LMS poll.\n"
         "• <b>/testpoll</b> — Send test poll.\n"
@@ -136,20 +138,4 @@ async def stats_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if msg_obj is not None:
         await msg_obj.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)
 
-def get_help_message():
-    return (
-        "<b>LMS Bot Help</b>\n\n"
-        "• <b>/sendeliminationpoll</b> — Start a new elimination poll (non-voters will be removed after admin confirmation).\n"
-    "• <b>/seteliminationpoll</b> — Easiest: Reply to any poll message with this command to set it as the elimination poll! (This will overwrite any previous elimination poll tracking.)\n"
-    "   (Advanced: You can also use /seteliminationpoll &lt;poll_id&gt; to set by ID.)\n"
-        "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
-        "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n"
-        "• <b>/geteliminationvoters</b> — Export elimination voters JSON.\n"
-        "• <b>/poll</b> — Send daily LMS poll.\n"
-        "• <b>/testpoll</b> — Send test poll.\n"
-        "• <b>/motivationnav</b> — Motivation info.\n"
-        "• <b>/statsnav</b> — LMS stats and info.\n"
-        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
-        "<i>All commands are admin-only unless stated.</i>"
-    )
 

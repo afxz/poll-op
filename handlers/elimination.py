@@ -1,3 +1,29 @@
+# Admin command to export group_members.json
+@admin_only
+async def export_members_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not os.path.exists(GROUP_MEMBERS_FILE):
+        await update.message.reply_text("No group members file found. Import one first.")
+        return
+    await update.message.reply_document(document=open(GROUP_MEMBERS_FILE, 'rb'), filename='group_members.json', caption="Current group members.")
+GROUP_MEMBERS_FILE = os.path.join(os.path.dirname(__file__), '../group_members.json')
+
+# Admin command to import group_members.json
+from telegram import Document
+@admin_only
+async def import_members_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message.document:
+        await update.message.reply_text("Please send a JSON file (exported group members).")
+        return
+    file = await update.message.document.get_file()
+    await file.download_to_drive(GROUP_MEMBERS_FILE)
+    await update.message.reply_text("Group members file imported successfully.")
+
+# Helper to load imported group members
+def load_group_members():
+    if os.path.exists(GROUP_MEMBERS_FILE):
+        with open(GROUP_MEMBERS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
 import os
 import json
 from telegram import Update, Document
@@ -50,22 +76,22 @@ async def elimination_report_command(update: Update, context: ContextTypes.DEFAU
         await update.message.reply_text("No elimination poll ID set.")
         return
     voters = load_elimination_voters()
-    # Get all group admins
     admin_ids = set(member.user.id for member in await context.bot.get_chat_administrators(GROUP_CHAT_ID))
-    # Get all group members (limited by Telegram API, so we use chat member count and fetch by user activity)
-    # For most groups, you will need to keep a list of active users or use another method, but here we use voters + admins as the set to check
-    # This means only users who voted or are admins are considered (Telegram API does not provide a way to list all members directly)
-    all_known_ids = set(int(uid) for uid in voters.keys()) | admin_ids
+    # Use imported group members if available
+    group_members = load_group_members()
+    if group_members:
+        all_member_ids = set(m['id'] for m in group_members)
+    else:
+        # fallback: only known voters + admins
+        all_member_ids = set(int(uid) for uid in voters.keys()) | admin_ids
     # Remove admins from elimination
-    non_admins = all_known_ids - admin_ids
+    non_admins = all_member_ids - admin_ids
     voted = set(int(uid) for uid in voters.keys())
     not_voted = non_admins - voted
-    # Prepare report
     report = f"<b>Elimination Poll Report</b>\nKnown non-admin members: {len(non_admins)}\nVoted: {len(voted)}\nNot voted: {len(not_voted)}\n\n"
     report += "<b>Voted:</b>\n" + "\n".join([str(uid) for uid in voted]) + "\n\n"
     report += "<b>Not Voted:</b>\n" + "\n".join([str(uid) for uid in not_voted])
     await update.message.reply_text(report, parse_mode="HTML")
-    # Ask for confirmation
     context.user_data['elimination_not_voted'] = list(not_voted)
     await update.message.reply_text("Reply /confirmelimination to ban all users who did not vote.")
 
