@@ -176,6 +176,16 @@ async def send_elimination_poll_command(update: Update, context: ContextTypes.DE
         if update.message:
             await update.message.reply_text(f"Failed to send elimination poll: {e}")
 
+@admin_only
+async def get_poll_id_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message and update.message.reply_to_message:
+        poll_msg = update.message.reply_to_message
+        if hasattr(poll_msg, 'poll') and poll_msg.poll:
+            poll_id = poll_msg.poll.id
+            await update.message.reply_text(f"Poll ID: <code>{poll_id}</code>", parse_mode="HTML")
+            return
+    await update.message.reply_text("Reply to a poll message with /getpollid to get its poll ID.")
+
 # To be registered in bot.py:
 # CommandHandler('geteliminationvoters', get_elimination_voters_command)
 # MessageHandler(filters.Document.ALL, import_elimination_voters_handler)

@@ -11,6 +11,7 @@ from handlers.testpoll import testpoll_command
 from jobs import schedule_jobs
 from handlers.ignore import ignore_nonadmin
 from handlers.elimination import get_elimination_voters_command, import_elimination_voters_handler, set_elimination_poll_id_command, elimination_poll_answer_handler, elimination_report_command, confirm_elimination_command, send_elimination_poll_command
+from handlers.poll import get_poll_id_command
 
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(message)s')
 logger = logging.getLogger(__name__)
@@ -41,7 +42,9 @@ def main():
     app.add_handler(CommandHandler("confirmelimination", confirm_elimination_command))
     app.add_handler(PollAnswerHandler(elimination_poll_answer_handler))
     app.add_handler(CommandHandler("sendeliminationpoll", send_elimination_poll_command))
-    app.add_handler(CommandHandler("help", lambda update, context: update.message.reply_text(get_help_message(), parse_mode="HTML")))
+    from handlers.core import help_command
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("getpollid", get_poll_id_command))
     # Navigation commands
     from handlers.core import polls_nav, motivation_nav, stats_nav
     from handlers.canva import toggle_canva_shortlink_command
