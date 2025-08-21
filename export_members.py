@@ -2,20 +2,44 @@
 # Usage: python export_members.py
 # You will need your own API ID and API HASH from https://my.telegram.org
 
-from telethon import TelegramClient
+import os
 import json
+from telethon import TelegramClient
 import asyncio
 
-API_ID = input('Enter your API ID: ')
-API_HASH = input('Enter your API HASH: ')
-PHONE = input('Enter your phone number (with country code): ')
+CONFIG_FILE = 'userbot_config.json'
+
+if os.path.exists(CONFIG_FILE):
+    with open(CONFIG_FILE, 'r') as f:
+        config = json.load(f)
+    API_ID = config.get('API_ID')
+    API_HASH = config.get('API_HASH')
+    PHONE = config.get('PHONE')
+else:
+    API_ID = input('Enter your API ID: ')
+    API_HASH = input('Enter your API HASH: ')
+    PHONE = input('Enter your phone number (with country code): ')
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump({'API_ID': API_ID, 'API_HASH': API_HASH, 'PHONE': PHONE}, f)
 
 async def main():
     group = input('Enter the group username or ID: ')
+    # Handle -100 prefix for supergroups
+    if group.startswith('-100'):
+        try:
+            group = int(group)
+        except Exception:
+            group = group[4:]
+    elif group.lstrip('-').isdigit():
+        group = int(group)
     client = TelegramClient('userbot_session', API_ID, API_HASH)
     await client.start(phone=PHONE)
     print('Logged in!')
-    entity = await client.get_entity(group)
+    try:
+        entity = await client.get_entity(group)
+    except Exception as e:
+        print(f'Could not find group: {e}')
+        return
     members = []
     async for user in client.iter_participants(entity):
         members.append({
