@@ -27,7 +27,9 @@ def get_start_message():
         f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
         f"<b>Auto Posting Times (IST):</b>\n• LMS Poll: {LMS_POLL_TIME}\n• Motivation: {motivation_times}\n\n"
         "<b>Elimination Events:</b>\n"
-        "• <b>/sendeliminationpoll</b> — Start an elimination poll (non-voters will be removed after admin confirmation).\n"
+        "• <b>/sendeliminationpoll</b> — Start a new elimination poll.\n"
+    "• <b>/seteliminationpoll</b> — Easiest: Reply to any poll message with this command to set it as the elimination poll!\n"
+    "   (Advanced: You can also use /seteliminationpoll &lt;poll_id&gt; to set by ID.)\n"
         "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
         "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n\n"
         "<b>Key Features & Navigation:</b>\n"
@@ -105,7 +107,9 @@ async def stats_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_help_message():
     return (
         "<b>LMS Bot Help</b>\n\n"
-        "• <b>/sendeliminationpoll</b> — Start an elimination poll (non-voters will be removed after admin confirmation).\n"
+        "• <b>/sendeliminationpoll</b> — Start a new elimination poll (non-voters will be removed after admin confirmation).\n"
+    "• <b>/seteliminationpoll</b> — Easiest: Reply to any poll message with this command to set it as the elimination poll!\n"
+    "   (Advanced: You can also use /seteliminationpoll &lt;poll_id&gt; to set by ID.)\n"
         "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
         "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n"
         "• <b>/geteliminationvoters</b> — Export elimination voters JSON.\n"

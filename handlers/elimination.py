@@ -50,21 +50,18 @@ async def elimination_report_command(update: Update, context: ContextTypes.DEFAU
         await update.message.reply_text("No elimination poll ID set.")
         return
     voters = load_elimination_voters()
-    # Get all group members
-    chat = await context.bot.get_chat(GROUP_CHAT_ID)
-    members = []
-    async for member in context.bot.get_chat_administrators(GROUP_CHAT_ID):
-        # Exclude admins from elimination
-        members.append(member.user.id)
-    async for member in context.bot.get_chat_members(GROUP_CHAT_ID):
-        if member.user.id not in members:
-            members.append(member.user.id)
-    # Now, get all non-admin members
-    all_members = set(members)
+    # Get all group admins
+    admin_ids = set(member.user.id for member in await context.bot.get_chat_administrators(GROUP_CHAT_ID))
+    # Get all group members (limited by Telegram API, so we use chat member count and fetch by user activity)
+    # For most groups, you will need to keep a list of active users or use another method, but here we use voters + admins as the set to check
+    # This means only users who voted or are admins are considered (Telegram API does not provide a way to list all members directly)
+    all_known_ids = set(int(uid) for uid in voters.keys()) | admin_ids
+    # Remove admins from elimination
+    non_admins = all_known_ids - admin_ids
     voted = set(int(uid) for uid in voters.keys())
-    not_voted = all_members - voted
+    not_voted = non_admins - voted
     # Prepare report
-    report = f"<b>Elimination Poll Report</b>\nTotal members: {len(all_members)}\nVoted: {len(voted)}\nNot voted: {len(not_voted)}\n\n"
+    report = f"<b>Elimination Poll Report</b>\nKnown non-admin members: {len(non_admins)}\nVoted: {len(voted)}\nNot voted: {len(not_voted)}\n\n"
     report += "<b>Voted:</b>\n" + "\n".join([str(uid) for uid in voted]) + "\n\n"
     report += "<b>Not Voted:</b>\n" + "\n".join([str(uid) for uid in not_voted])
     await update.message.reply_text(report, parse_mode="HTML")
