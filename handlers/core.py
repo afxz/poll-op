@@ -26,6 +26,10 @@ def get_start_message():
         f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
         f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
         f"<b>Auto Posting Times (IST):</b>\n• LMS Poll: {LMS_POLL_TIME}\n• Motivation: {motivation_times}\n\n"
+        "<b>Elimination Events:</b>\n"
+        "• <b>/sendeliminationpoll</b> — Start an elimination poll (non-voters will be removed after admin confirmation).\n"
+        "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
+        "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n\n"
         "<b>Key Features & Navigation:</b>\n"
         "• <b>/polls</b> — LMS poll commands and info.\n"
         "• <b>/motivationnav</b> — Motivation info.\n"
@@ -97,4 +101,19 @@ async def stats_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_obj = update.message
     if msg_obj is not None:
         await msg_obj.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)
+
+def get_help_message():
+    return (
+        "<b>LMS Bot Help</b>\n\n"
+        "• <b>/sendeliminationpoll</b> — Start an elimination poll (non-voters will be removed after admin confirmation).\n"
+        "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
+        "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n"
+        "• <b>/geteliminationvoters</b> — Export elimination voters JSON.\n"
+        "• <b>/poll</b> — Send daily LMS poll.\n"
+        "• <b>/testpoll</b> — Send test poll.\n"
+        "• <b>/motivationnav</b> — Motivation info.\n"
+        "• <b>/statsnav</b> — LMS stats and info.\n"
+        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
+        "<i>All commands are admin-only unless stated.</i>"
+    )
 

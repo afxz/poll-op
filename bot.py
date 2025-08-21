@@ -1,5 +1,5 @@
 import logging
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, PollAnswerHandler
 from config import TELEGRAM_TOKEN
 from handlers.core import start
 from handlers.poll import poll_command, set_lms_poll_time
@@ -10,6 +10,7 @@ from handlers.stats import stats_command
 from handlers.testpoll import testpoll_command
 from jobs import schedule_jobs
 from handlers.ignore import ignore_nonadmin
+from handlers.elimination import get_elimination_voters_command, import_elimination_voters_handler, set_elimination_poll_id_command, elimination_poll_answer_handler, elimination_report_command, confirm_elimination_command, send_elimination_poll_command
 
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(name)s:%(message)s')
 logger = logging.getLogger(__name__)
@@ -33,6 +34,14 @@ def main():
     app.add_handler(CommandHandler("testmotivation", testmotivation_command))
     app.add_handler(CommandHandler("setlmspolltime", set_lms_poll_time))
     app.add_handler(CommandHandler("droplink", droplink_command))
+    app.add_handler(CommandHandler("geteliminationvoters", get_elimination_voters_command))
+    app.add_handler(MessageHandler(filters.Document.ALL, import_elimination_voters_handler))
+    app.add_handler(CommandHandler("seteliminationpoll", set_elimination_poll_id_command))
+    app.add_handler(CommandHandler("eliminationreport", elimination_report_command))
+    app.add_handler(CommandHandler("confirmelimination", confirm_elimination_command))
+    app.add_handler(PollAnswerHandler(elimination_poll_answer_handler))
+    app.add_handler(CommandHandler("sendeliminationpoll", send_elimination_poll_command))
+    app.add_handler(CommandHandler("help", lambda update, context: update.message.reply_text(get_help_message(), parse_mode="HTML")))
     # Navigation commands
     from handlers.core import polls_nav, motivation_nav, stats_nav
     from handlers.canva import toggle_canva_shortlink_command

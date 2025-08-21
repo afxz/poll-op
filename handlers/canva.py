@@ -28,6 +28,18 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
     _, msg_id, vote_type = data
     user_id = query.from_user.id
+    # --- FAKE VOTE RESTORE LOGIC (always runs, even for old posts) ---
+    w, n = get_vote_counts(msg_id)
+    # If the post has 0 or 1 working votes and no notworking votes, likely lost fake votes after restart
+    if w <= 1 and n == 0:
+        # Re-apply fake votes (same logic as schedule_fake_votes)
+        fake_n = random.randint(10, 20)
+        set_fake_votes(msg_id, fake_n)
+        # Optionally update the markup immediately
+        try:
+            await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
+        except Exception:
+            pass
     if not can_vote(msg_id):
         await query.answer("Voting closed for this post.", show_alert=True)
         return
@@ -205,14 +217,15 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
             await msg_obj.reply_text("Please provide a Canva invite link.")
         return
 
-    canva_url = context.args[0] if context.args else ""
+    original_canva_url = context.args[0] if context.args else ""
     alias = context.args[1] if len(context.args) > 1 else ""
+    converted_url = original_canva_url
 
     # All Canva links are now shortlinked if toggle is enabled
     global canva_shortlink_enabled
     if canva_shortlink_enabled:
-        print(f"[Canva] Shortlinking enabled, sending to Droplink: {canva_url}")
-        api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={canva_url}"
+        print(f"[Canva] Shortlinking enabled, sending to Droplink: {original_canva_url}")
+        api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={original_canva_url}"
         if alias:
             api_url += f"&alias={alias}"
         api_url += "&format=text"
@@ -223,13 +236,15 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
                 if msg_obj:
                     await msg_obj.reply_text("Failed to shorten link. Droplink API error.")
                 return
-            canva_url = short_url
+            converted_url = short_url
         except Exception as e:
             if msg_obj:
                 await msg_obj.reply_text(f"Droplink API error: {e}")
             return
     else:
-        print(f"[Canva] Shortlinking disabled, posting original link: {canva_url}")
+        print(f"[Canva] Shortlinking disabled, posting original link: {original_canva_url}")
+
+    canva_url = converted_url
 
     # Validate CANVA_CHANNEL_ID
     try:
@@ -290,5 +305,23 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
             await msg_obj.delete()
         except Exception:
             pass
+
+    # Send DM to user with original and converted link summary
+    try:
+        user_id = None
+        if msg_obj and msg_obj.from_user:
+            user_id = msg_obj.from_user.id
+        elif update.effective_user:
+            user_id = update.effective_user.id
+        if user_id:
+            summary = (
+                "<b>Canva Link Posted</b>\n"
+                f"<b>Original:</b> <code>{original_canva_url}</code>\n"
+                f"<b>Converted:</b> <code>{converted_url}</code>\n"
+                f"<b>Channel:</b> <code>{CANVA_CHANNEL_ID}</code>"
+            )
+            await context.bot.send_message(chat_id=user_id, text=summary, parse_mode="HTML", disable_web_page_preview=True)
+    except Exception:
+        pass
 
 ## (Removed duplicate function definitions and unreachable code at the end of the file)
