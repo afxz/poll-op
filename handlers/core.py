@@ -1,3 +1,31 @@
+def get_start_message():
+    today = datetime.now(IST).date()
+    day_num = (today - CHALLENGE_START_DATE.date()).days + 1
+    days_left = CHALLENGE_DAYS - day_num + 1
+    challenge_end = CHALLENGE_START_DATE.date() + timedelta(days=CHALLENGE_DAYS-1)
+    motivation_times = ', '.join([t.strftime('%H:%M') for t in MOTIVATION_TIMES])
+    return (
+        "<b>👋 Welcome to LMS 6.0!</b>\n\n"
+        "<b>Challenge Info:</b>\n"
+        f"• <b>Start Date:</b> {CHALLENGE_START_DATE.date()}\n"
+        f"• <b>End Date:</b> {challenge_end}\n"
+        f"• <b>Day:</b> {day_num if day_num > 0 else 0} / {CHALLENGE_DAYS}\n"
+        f"• <b>Days Left:</b> {days_left if days_left > 0 else 0}\n\n"
+        f"<b>Auto Posting Times (IST):</b>\n• LMS Poll: {LMS_POLL_TIME}\n• Motivation: {motivation_times}\n\n"
+        "<b>Elimination Events:</b>\n"
+        "• <b>/sendeliminationpoll</b> — Start a new elimination poll.\n"
+        "• <b>/seteliminationpoll</b> — Reply to any poll message with this command to set it as the elimination poll (overwrites previous tracking).\n"
+        "   (Advanced: /seteliminationpoll &lt;poll_id&gt; to set by ID.)\n"
+        "• <b>/getpollid</b> — Reply to any poll message with this command to get its poll ID.\n"
+        "• <b>/eliminationreport</b> — Get a report of who voted and who did not.\n"
+        "• <b>/confirmelimination</b> — Confirm and remove non-voters.\n\n"
+        "<b>Key Features & Navigation:</b>\n"
+        "• <b>/polls</b> — LMS poll commands and info.\n"
+        "• <b>/motivationnav</b> — Motivation info.\n"
+        "• <b>/statsnav</b> — LMS stats and info.\n"
+        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
+        "<i>All commands are admin-only unless stated. Canva shortlinking toggle resets on restart.</i>"
+    )
 import logging
 import pytz
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
