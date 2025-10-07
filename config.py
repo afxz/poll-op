@@ -16,7 +16,15 @@ LMS_POLL_TIME = os.getenv('LMS_POLL_TIME', '20:00')  # Default 8:00 PM IST
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GROUP_CHAT_ID = os.getenv('GROUP_CHAT_ID', '')
-ADMIN_ID = int(os.getenv('ADMIN_ID', '7068007001'))
+def parse_admin_ids(val):
+    # Accept comma or space separated
+    if not val:
+        return []
+    ids = [x.strip() for x in val.replace(',', ' ').split() if x.strip().isdigit()]
+    return [int(x) for x in ids]
+
+ADMIN_ID = os.getenv('ADMIN_ID', '7068007001')
+ADMIN_IDS = parse_admin_ids(ADMIN_ID)
 CHALLENGE_START_DATE = datetime.strptime(os.getenv('CHALLENGE_START_DATE', '2025-07-01'), '%Y-%m-%d')
 CHALLENGE_DAYS = int(os.getenv('CHALLENGE_DAYS', 150))
 POLL_OPTIONS = [

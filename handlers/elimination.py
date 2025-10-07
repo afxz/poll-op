@@ -82,16 +82,17 @@ async def elimination_report_command(update: Update, context: ContextTypes.DEFAU
         await update.message.reply_text("No elimination poll ID set.")
         return
     voters = load_elimination_voters()
-    admin_ids = set(member.user.id for member in await context.bot.get_chat_administrators(GROUP_CHAT_ID))
+    tg_admin_ids = set(member.user.id for member in await context.bot.get_chat_administrators(GROUP_CHAT_ID))
+    all_admin_ids = set(ADMIN_IDS) | tg_admin_ids
     # Use imported group members if available
     group_members = load_group_members()
     if group_members:
         all_member_ids = set(m['id'] for m in group_members)
     else:
         # fallback: only known voters + admins
-        all_member_ids = set(int(uid) for uid in voters.keys()) | admin_ids
+        all_member_ids = set(int(uid) for uid in voters.keys()) | all_admin_ids
     # Remove admins from elimination
-    non_admins = all_member_ids - admin_ids
+    non_admins = all_member_ids - all_admin_ids
     voted = set(int(uid) for uid in voters.keys())
     not_voted = non_admins - voted
     report = f"<b>Elimination Poll Report</b>\nKnown non-admin members: {len(non_admins)}\nVoted: {len(voted)}\nNot voted: {len(not_voted)}\n\n"
@@ -202,8 +203,9 @@ async def send_elimination_poll_command(update: Update, context: ContextTypes.DE
         if update.message:
             await update.message.reply_text(f"Elimination poll sent and pinned! Poll ID: {poll_msg.poll.id}")
         # Schedule reminder to ping admin in group after deadline
-        from config import ADMIN_ID
-        asyncio.create_task(schedule_elimination_reminder(context, ADMIN_ID, int(GROUP_CHAT_ID), last_date))
+        from config import ADMIN_IDS
+        for admin_id in ADMIN_IDS:
+            asyncio.create_task(schedule_elimination_reminder(context, admin_id, int(GROUP_CHAT_ID), last_date))
     except Exception as e:
         if update.message:
             await update.message.reply_text(f"Failed to send elimination poll: {e}")

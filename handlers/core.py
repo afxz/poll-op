@@ -31,7 +31,7 @@ import logging
 import pytz
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from config import ADMIN_ID, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, POLL_OPTIONS, LMS_POLL_TIME
+from config import ADMIN_IDS, GROUP_CHAT_ID, CHALLENGE_START_DATE, CHALLENGE_DAYS, MOTIVATION_TIMES, POLL_OPTIONS, LMS_POLL_TIME
 from motivation_service import get_motivation
 from utils import admin_only
 from datetime import datetime, timedelta
@@ -133,7 +133,7 @@ async def stats_nav(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>Days Left:</b> {days_left if days_left > 0 else 0}\n"
         f"<b>Poll Time (IST):</b> {LMS_POLL_TIME}\n"
         f"<b>Group ID:</b> <code>{GROUP_CHAT_ID}</code>\n"
-        f"<b>Admin ID:</b> <code>{ADMIN_ID}</code>\n"
+        f"<b>Admin IDs:</b> <code>{', '.join(str(i) for i in ADMIN_IDS)}</code>\n"
         "<i>All times are in Indian Standard Time (IST).</i>"
     )
     msg_obj = update.message
