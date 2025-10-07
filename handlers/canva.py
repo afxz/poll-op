@@ -217,14 +217,14 @@ def build_canva_post_text(canva_url):
     # Format links bold and underline
     link_fmt = f"<b><u>{canva_url}</u></b>"
     return (
-        "<b>FREE GIVEAWAY ✅😉 (ACTIVE)</b>\n"
+        "<b>FREE GIVEAWAY ✅😉 (ACTIVE)</b>\n\n"
         "<b>❤️ CANVA PRO ACTIVATED 💛</b>\n"
         "<b>👑 UPTO 30 Days 👑</b>\n\n"
         "<b>NEW CANVA LINK ❤️✅</b>\n"
         f"{link_fmt}\n{link_fmt}\n\n"
         "🖼 Proof: After joining, send a screenshot to @aenzBot\n\n"
         "<b>⚡️ Heads up</b>: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
-        "✅ Close pop up ads if appears."
+        "⏩ Close any pop up ads if appears."
     )
 
 @admin_only
