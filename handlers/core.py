@@ -24,6 +24,7 @@ def get_start_message():
         "• <b>/motivationnav</b> — Motivation info.\n"
         "• <b>/statsnav</b> — LMS stats and info.\n"
         "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
+        "• <b>/canva &lt;link&gt;</b> — Instantly post a Canva link to the channel in the giveaway format (admin only).\n"
         "<i>All commands are admin-only unless stated. Canva shortlinking toggle resets on restart.</i>"
     )
 import logging
@@ -62,7 +63,8 @@ def get_help_message():
         "• <b>/statsnav</b> — LMS stats and info.\n"
         "• <b>/polls</b> — LMS poll commands and info.\n\n"
         "<b>Canva Tools:</b>\n"
-        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n\n"
+        "• <b>/togglecanvashortlink</b> — Toggle Canva shortlinking (admin only).\n"
+        "• <b>/canva &lt;link&gt;</b> — Instantly post a Canva link to the channel in the giveaway format (admin only).\n\n"
         "<i>All commands are admin-only unless stated. For elimination, export/import JSON for backup or migration. Canva shortlinking toggle resets on restart.</i>"
     )
 
