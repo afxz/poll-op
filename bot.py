@@ -34,6 +34,8 @@ def main():
     app.add_handler(CommandHandler("testmotivation", testmotivation_command))
     app.add_handler(CommandHandler("setlmspolltime", set_lms_poll_time))
     app.add_handler(CommandHandler("droplink", droplink_command))
+    from handlers.canva import canva_command
+    app.add_handler(CommandHandler("canva", canva_command))
     app.add_handler(CommandHandler("geteliminationvoters", get_elimination_voters_command))
     app.add_handler(MessageHandler(filters.Document.ALL, import_elimination_voters_handler))
     app.add_handler(CommandHandler("seteliminationpoll", set_elimination_poll_id_command))

@@ -189,12 +189,12 @@ def can_vote(msg_id):
 
 def build_vote_markup(msg_id):
     w, n = get_vote_counts(msg_id)
+    # Only one button: tutorial
+    from config import CANVA_TUTORIAL_URL
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton(f"✅ Working ({w})", callback_data=f"canva_vote:{msg_id}:working"),
-            InlineKeyboardButton(f"❌ Not working ({n})", url="https://t.me/CanvaProInviteLinks/583")
-        ],
-        [InlineKeyboardButton("⚠️ JOIN BACKUP ⚡️", url=CANVA_PROOF_URL)]
+            InlineKeyboardButton("📷 HOW TO JOIN TUTORIAL 🧑‍💻", url=CANVA_TUTORIAL_URL)
+        ]
     ])
 
 async def schedule_fake_votes(bot, chat_id, msg_id):
@@ -208,23 +208,32 @@ async def schedule_fake_votes(bot, chat_id, msg_id):
         import logging
         logging.warning(f"[FakeVotes] Could not update message {msg_id} in chat {chat_id}: {e}")
 
+
+# --- New Canva Post Format and Command ---
+def build_canva_post_text(canva_url):
+    return (
+        "<b>FREE GIVEAWAY ✅😉 (ACTIVE)</b>\n\n"
+        "❤️ CANVA PRO ACTIVATED 💛\n"
+        "👑 UPTO 30 Days 👑\n\n"
+        "<b>NEW CANVA LINK ❤️✅</b>\n"
+        f"{canva_url}\n{canva_url}\n\n"
+        "🖼 Proof: After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a> (https://t.me/aenzBot).\n\n"
+        "⚡️ Heads up: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
+        "✅ Close pop up ads if appears."
+    )
+
 @admin_only
 async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_obj = update.message
-
     if not context.args or len(context.args) < 1:
         if msg_obj:
             await msg_obj.reply_text("Please provide a Canva invite link.")
         return
-
     original_canva_url = context.args[0] if context.args else ""
     alias = context.args[1] if len(context.args) > 1 else ""
     converted_url = original_canva_url
-
-    # All Canva links are now shortlinked if toggle is enabled
     global canva_shortlink_enabled
     if canva_shortlink_enabled:
-        print(f"[Canva] Shortlinking enabled, sending to Droplink: {original_canva_url}")
         api_url = f"https://droplink.co/api?api={DROP_LINK_API_TOKEN}&url={original_canva_url}"
         if alias:
             api_url += f"&alias={alias}"
@@ -241,72 +250,38 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
             if msg_obj:
                 await msg_obj.reply_text(f"Droplink API error: {e}")
             return
-    else:
-        print(f"[Canva] Shortlinking disabled, posting original link: {original_canva_url}")
-
     canva_url = converted_url
-
-    # Validate CANVA_CHANNEL_ID
     try:
         channel_id = int(CANVA_CHANNEL_ID)
     except Exception:
         if msg_obj:
             await msg_obj.reply_text("Invalid CANVA_CHANNEL_ID. Please check your .env and use the numeric channel ID (e.g., -1001234567890). Channel URLs are not supported.")
         return
-
-    post_text = (
-        "<b>NEW CANVA LINK ❤️✅</b>\n"
-        f"<b><u>{canva_url}</u></b>\n<b><u>{canva_url}</u></b>\n\n"
-        f"<b>📷 <a href=\"{CANVA_TUTORIAL_URL}\">HOW TO JOIN TUTORIAL</a> 🧑‍💻</b>\n\n"
-        f"<b>🖼 Proof:</b> After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a>.\n"
-    )
+    post_text = build_canva_post_text(canva_url)
     try:
         sent = await context.bot.send_photo(
             chat_id=channel_id,
             photo=CANVA_PREVIEW_IMAGE,
             caption=post_text,
             parse_mode="HTML",
-            reply_markup=build_vote_markup('pending')  # temp, will update after send
+            reply_markup=build_vote_markup('pending')
         )
     except Exception as e:
-        # Provide more helpful error messages for common Telegram errors
         error_text = str(e)
         if msg_obj:
-            if "chat not found" in error_text.lower():
-                help_msg = (
-                    "Failed to post to channel: Chat not found.\n"
-                    "- Make sure the bot is an admin in the channel.\n"
-                    "- Double-check the CANVA_CHANNEL_ID in your .env (must be a numeric ID, not a URL).\n"
-                    "- For private channels, the bot must be added as a member/admin.\n"
-                    "- After changes, restart the bot."
-                )
-                await msg_obj.reply_text(help_msg)
-            elif "not enough rights" in error_text.lower() or "have no rights" in error_text.lower():
-                help_msg = (
-                    "Failed to post to channel: Bot does not have permission.\n"
-                    "- Make sure the bot is an admin in the channel with permission to post and send media."
-                )
-                await msg_obj.reply_text(help_msg)
-            else:
-                await msg_obj.reply_text(f"Failed to post to channel: {e}")
+            await msg_obj.reply_text(f"Failed to post to channel: {error_text}")
         return
-    # Save initial vote data
     data = load_votes()
     data[str(sent.message_id)] = {'working': 0, 'notworking': 0, 'voters': {}, 'timestamp': datetime.datetime.utcnow().timestamp()}
     save_votes(data)
-    # Update markup with real msg_id
     await context.bot.edit_message_reply_markup(chat_id=channel_id, message_id=sent.message_id, reply_markup=build_vote_markup(sent.message_id))
-    # Schedule fake votes
     asyncio.create_task(schedule_fake_votes(context.bot, channel_id, sent.message_id))
     cleanup_old_votes()
-    # Delete the user's command message after posting
     if msg_obj:
         try:
             await msg_obj.delete()
         except Exception:
             pass
-
-    # Send DM to user with original and converted link summary
     try:
         user_id = None
         if msg_obj and msg_obj.from_user:
@@ -323,5 +298,16 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
             await context.bot.send_message(chat_id=user_id, text=summary, parse_mode="HTML", disable_web_page_preview=True)
     except Exception:
         pass
+
+# --- New /canva command for direct posting ---
+@admin_only
+async def canva_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg_obj = update.message
+    if not context.args or len(context.args) < 1:
+        if msg_obj:
+            await msg_obj.reply_text("Usage: /canva <canva-link>")
+        return
+    # Use the same logic as canva_droplink_command
+    await canva_droplink_command(update, context)
 
 ## (Removed duplicate function definitions and unreachable code at the end of the file)
