@@ -189,9 +189,12 @@ def can_vote(msg_id):
 
 def build_vote_markup(msg_id):
     w, n = get_vote_counts(msg_id)
-    # Only one button: tutorial
     from config import CANVA_TUTORIAL_URL
     return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(f"✅ Working ({w})", callback_data=f"canva_vote:{msg_id}:working"),
+            InlineKeyboardButton(f"💸 Paid Plans ({n})", url="https://t.me/CanvaProInviteLinks/583")
+        ],
         [
             InlineKeyboardButton("📷 HOW TO JOIN TUTORIAL 🧑‍💻", url=CANVA_TUTORIAL_URL)
         ]
@@ -211,14 +214,16 @@ async def schedule_fake_votes(bot, chat_id, msg_id):
 
 # --- New Canva Post Format and Command ---
 def build_canva_post_text(canva_url):
+    # Format links bold and underline
+    link_fmt = f"<b><u>{canva_url}</u></b>"
     return (
-        "<b>FREE GIVEAWAY ✅😉 (ACTIVE)</b>\n\n"
-        "❤️ CANVA PRO ACTIVATED 💛\n"
-        "👑 UPTO 30 Days 👑\n\n"
+        "<b>FREE GIVEAWAY ✅😉 (ACTIVE)</b>\n"
+        "<b>❤️ CANVA PRO ACTIVATED 💛</b>\n"
+        "<b>👑 UPTO 30 Days 👑</b>\n\n"
         "<b>NEW CANVA LINK ❤️✅</b>\n"
-        f"{canva_url}\n{canva_url}\n\n"
-        "🖼 Proof: After joining, send a screenshot to <a href=\"https://t.me/aenzBot\">@aenzBot</a> (https://t.me/aenzBot).\n\n"
-        "⚡️ Heads up: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
+        f"{link_fmt}\n{link_fmt}\n\n"
+        "🖼 Proof: After joining, send a screenshot to @aenzBot\n\n"
+        "<b>⚡️ Heads up</b>: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
         "✅ Close pop up ads if appears."
     )
 
