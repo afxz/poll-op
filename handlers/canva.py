@@ -219,7 +219,7 @@ def build_canva_post_text(canva_url):
         "<b>👑 UPTO 30 Days 👑</b>\n\n"
         "<b>NEW CANVA LINK ❤️✅</b>\n"
         f"{link_fmt}\n{link_fmt}\n\n"
-        f"📷 HOW TO JOIN TUTORIAL ({tutorial_url}) 🧑‍💻\n\n"
+        f"<b><a href=\"{tutorial_url}\">📷 HOW TO JOIN TUTORIAL 🧑‍💻</a></b>\n\n"
         "🖼 Proof: After joining, send a screenshot to @aenzBot\n\n"
         "<b>⚡️ Heads up</b>: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
         "⏩ Close any pop up ads if appears."
