@@ -28,14 +28,12 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
     _, msg_id, vote_type = data
     user_id = query.from_user.id
-    # --- FAKE VOTE RESTORE LOGIC (always runs, even for old posts) ---
+    # --- FAKE VOTE RESTORE LOGIC (only if no votes at all) ---
     w, n = get_vote_counts(msg_id)
-    # If the post has 0 or 1 working votes and no notworking votes, likely lost fake votes after restart
-    if w <= 1 and n == 0:
-        # Re-apply fake votes (same logic as schedule_fake_votes)
+    # Only add fake votes if there are no votes at all (prevents overwriting real votes)
+    if w == 0 and n == 0:
         fake_n = random.randint(10, 20)
         set_fake_votes(msg_id, fake_n)
-        # Optionally update the markup immediately
         try:
             await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
         except Exception:
@@ -50,13 +48,11 @@ async def canva_vote_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.answer("Invalid vote type.", show_alert=True)
         return
     add_vote(msg_id, user_id, vote_type)
-    # Update the button markup
     try:
         await query.edit_message_reply_markup(reply_markup=build_vote_markup(msg_id))
     except Exception:
         pass
     if vote_type == "notworking":
-        # This should not be triggered anymore, as the button is now a link, but keep for safety
         await query.answer("Please use the new link provided.", show_alert=True)
     else:
         await query.answer("Vote recorded!", show_alert=False)
@@ -185,7 +181,8 @@ def can_vote(msg_id):
     data = load_votes()
     v = data.get(str(msg_id), {})
     now = datetime.datetime.utcnow().timestamp()
-    return (now - v.get('timestamp', now)) < 86400
+    # Allow voting for 14 days (1209600 seconds)
+    return (now - v.get('timestamp', now)) < 1209600
 
 def build_vote_markup(msg_id):
     w, n = get_vote_counts(msg_id)
@@ -214,14 +211,15 @@ async def schedule_fake_votes(bot, chat_id, msg_id):
 
 # --- New Canva Post Format and Command ---
 def build_canva_post_text(canva_url):
-    # Format links bold and underline
     link_fmt = f"<b><u>{canva_url}</u></b>"
+    tutorial_url = "https://t.me/+-ewfSaTN-wM1ODg1"
     return (
         "<b>FREE GIVEAWAY ✅😉 (ACTIVE)</b>\n\n"
         "<b>❤️ CANVA PRO ACTIVATED 💛</b>\n"
         "<b>👑 UPTO 30 Days 👑</b>\n\n"
         "<b>NEW CANVA LINK ❤️✅</b>\n"
         f"{link_fmt}\n{link_fmt}\n\n"
+        f"📷 HOW TO JOIN TUTORIAL ({tutorial_url}) 🧑‍💻\n\n"
         "🖼 Proof: After joining, send a screenshot to @aenzBot\n\n"
         "<b>⚡️ Heads up</b>: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
         "⏩ Close any pop up ads if appears."
