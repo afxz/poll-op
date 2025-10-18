@@ -190,10 +190,13 @@ def build_vote_markup(msg_id):
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(f"✅ Working ({w})", callback_data=f"canva_vote:{msg_id}:working"),
-            InlineKeyboardButton(f"💸 Paid Plans ({n})", url="https://t.me/CanvaProInviteLinks/1284")
+            InlineKeyboardButton("💸 Paid Plans", url="https://t.me/CanvaProInviteLinks/1284")
         ],
         [
             InlineKeyboardButton("📷 HOW TO JOIN TUTORIAL 🧑‍💻", url=CANVA_TUTORIAL_URL)
+        ],
+        [
+            InlineKeyboardButton("📝 Nova’s Diary (🆕!)", url="https://t.me/noversharing")
         ]
     ])
 
