@@ -65,7 +65,7 @@ import asyncio
 import datetime
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, MessageHandler, filters
-from config import DROP_LINK_API_TOKEN, CANVA_CHANNEL_ID, CANVA_TUTORIAL_URL, CANVA_PROOF_URL, CANVA_PREVIEW_IMAGE
+from config import DROP_LINK_API_TOKEN, CANVA_CHANNEL_ID, CANVA_TUTORIAL_URL, CANVA_PROOF_URL, CANVA_PREVIEW_IMAGE, NOVA_DIARY_URL, CANVA_CONTACT_HANDLES
 from utils import admin_only
 
 # Exported symbols for import in bot.py
@@ -173,8 +173,13 @@ def add_vote(msg_id, user_id, vote_type):
 
 def set_fake_votes(msg_id, n):
     data = load_votes()
-    v = data.setdefault(str(msg_id), {'working': 0, 'notworking': 0, 'voters': {}, 'timestamp': datetime.datetime.utcnow().timestamp()})
-    v['working'] += n
+    v = data.setdefault(str(msg_id), {'working': 0, 'notworking': 0, 'voters': {}, 'timestamp': datetime.datetime.utcnow().timestamp(), 'fake_applied': False})
+    # Don't re-apply fake votes if already applied
+    if v.get('fake_applied'):
+        save_votes(data)
+        return
+    v['working'] = v.get('working', 0) + n
+    v['fake_applied'] = True
     save_votes(data)
 
 def can_vote(msg_id):
@@ -196,13 +201,14 @@ def build_vote_markup(msg_id):
             InlineKeyboardButton("📷 HOW TO JOIN TUTORIAL 🧑‍💻", url=CANVA_TUTORIAL_URL)
         ],
         [
-            InlineKeyboardButton("📝 Nova’s Diary (🆕!)", url="https://t.me/noversharing")
+            InlineKeyboardButton("🎁 Lifetime Free Giveaways", url=NOVA_DIARY_URL)
         ]
     ])
 
 async def schedule_fake_votes(bot, chat_id, msg_id):
     await asyncio.sleep(random.randint(120, 300))
     n = random.randint(10, 20)
+    # Only set fake votes if not already applied (set_fake_votes will check)
     set_fake_votes(msg_id, n)
     try:
         markup = build_vote_markup(msg_id)
@@ -223,9 +229,21 @@ def build_canva_post_text(canva_url):
         "<b>NEW CANVA LINK ❤️✅</b>\n"
         f"{link_fmt}\n{link_fmt}\n\n"
         f"<b><a href=\"{tutorial_url}\">📷 HOW TO JOIN TUTORIAL 🧑‍💻</a></b>\n\n"
-        "🖼 Proof: After joining, send a screenshot to @aenzBot\n\n"
+        "🖼 Once you’re in, drop a screenshot proof in the comments (blur your email if you wanna stay lowkey).\n\n"
+        "💬 Contact us: @aenzBot / @nveet 🔁✅\n\n"
         "<b>⚡️ Heads up</b>: Everyone who joins needs to complete the shortlink twice. After the second completion, you’ll be automatically added to the Pro plan — 100% guaranteed. 💚\n"
         "⏩ Close any pop up ads if appears."
+    )
+
+
+def build_followup_text(contact_handles: str):
+    # Returns the follow-up reply text; contact handles injected from config
+    return (
+        "💎 Drop your screenshot proof in the comments below 👇\n\n"
+        "<b>📌 Don’t forget to blur your email before posting.</b>\n\n"
+        "#Proof@CanvaProInviteLinks\n\n"
+        f"💬 Contact us: {contact_handles} 🔁✅\n\n"
+        "✅ Link will stay active till "
     )
 
 @admin_only
@@ -278,11 +296,18 @@ async def canva_droplink_command(update: Update, context: ContextTypes.DEFAULT_T
             await msg_obj.reply_text(f"Failed to post to channel: {error_text}")
         return
     data = load_votes()
-    data[str(sent.message_id)] = {'working': 0, 'notworking': 0, 'voters': {}, 'timestamp': datetime.datetime.utcnow().timestamp()}
+    data[str(sent.message_id)] = {'working': 0, 'notworking': 0, 'voters': {}, 'timestamp': datetime.datetime.utcnow().timestamp(), 'fake_applied': False}
     save_votes(data)
     await context.bot.edit_message_reply_markup(chat_id=channel_id, message_id=sent.message_id, reply_markup=build_vote_markup(sent.message_id))
     asyncio.create_task(schedule_fake_votes(context.bot, channel_id, sent.message_id))
     cleanup_old_votes()
+    # Send a follow-up reply message (as a reply to the posted photo)
+    try:
+        from config import CANVA_CONTACT_HANDLES
+        follow_text = build_followup_text(CANVA_CONTACT_HANDLES)
+        await context.bot.send_message(chat_id=channel_id, text=follow_text, parse_mode="HTML", reply_to_message_id=sent.message_id)
+    except Exception:
+        pass
     if msg_obj:
         try:
             await msg_obj.delete()
